@@ -4,12 +4,15 @@ library(yaml)
 library(stringi)
 
 
-SESS_DIR <- here('..', 'sessions')
+SESS_DIR <- fs::path_abs(here("..", "sessions"))
 stopifnot("the sessions directory must exist" = fs::is_dir(SESS_DIR))
 
 save_sess_config <- function(sess) {
-    fname <- here(SESS_DIR, sess$sess_id, 'session.yaml')
-    write_yaml(sess, fname)
+    write_yaml(sess, here(SESS_DIR, sess$sess_id, "session.yaml"))
+}
+
+load_sess_config <- function(sess_id) {
+    read_yaml(here(SESS_DIR, sess_id, "session.yaml"))
 }
 
 
@@ -19,7 +22,8 @@ ui <- fluidPage(
 
     sidebarLayout(
         sidebarPanel(
-            actionButton('createSession', 'Create session')
+            uiOutput("sessionsList"),
+            actionButton("createSession", "Create a new session")
         ),
         mainPanel(
            uiOutput("activeSession")
@@ -51,10 +55,36 @@ server <- function(input, output) {
         save_sess_config(state$sess)
     })
 
+    observeEvent(input$sessionsSelect, {
+        state$sess <- load_sess_config(input$sessionsSelect)
+    })
+
+    output$sessionsList <- renderUI({
+        session_dirs <- fs::dir_ls(here(SESS_DIR), type = "directory")
+        session_dates <- sapply(as.character(session_dirs), function(d) {
+            read_yaml(here(d, "session.yaml"))$date
+        }, USE.NAMES = FALSE)
+        sortindices <- order(session_dates)
+        session_ids <- basename(session_dirs)[sortindices]
+        session_dates <- session_dates[sortindices]
+
+        session_opts <- session_ids
+        names(session_opts) <- sprintf("%s – %s", session_dates, session_ids)
+
+        selectInput("sessionsSelect", "Load session:", session_opts, selected = state$sess$sess_id)
+    })
+
     output$activeSession <- renderUI({
         req(state$sess)
 
-        h1(state$sess$sess_id)
+        list(
+            h1(sprintf("Session %s", state$sess$sess_id)),
+            tags$ul(
+                tags$li(sprintf("Date: %s", state$sess$date)),
+                tags$li(sprintf("Language: %s", state$sess$language)),
+                tags$li(sprintf("Current stage: %s", state$sess$stage))
+            )
+        )
     })
 }
 
