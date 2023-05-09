@@ -1,51 +1,62 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
 library(shiny)
+library(here)
+library(yaml)
+library(stringi)
 
-# Define UI for application that draws a histogram
+
+SESS_DIR <- here('..', 'sessions')
+stopifnot("the sessions directory must exist" = fs::is_dir(SESS_DIR))
+
+save_sess_config <- function(sess) {
+    fname <- here(SESS_DIR, sess$sess_id, 'session.yaml')
+    write_yaml(sess, fname)
+}
+
+
 ui <- fluidPage(
-
     # Application title
-    titlePanel("Old Faithful Geyser Data"),
+    titlePanel("Shrager Memory Game: Teacher App"),
 
-    # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
+            actionButton('createSession', 'Create session')
         ),
-
-        # Show a plot of the generated distribution
         mainPanel(
-           plotOutput("distPlot")
+           uiOutput("activeSession")
         )
     )
 )
 
-# Define server logic required to draw a histogram
 server <- function(input, output) {
+    state <- reactiveValues(sess = NULL)
 
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    observeEvent(input$createSession, {
+        sess_id <- NULL
+        while (is.null(sess_id) || fs::dir_exists(here(SESS_DIR, sess_id))) {
+            sess_id <- stri_rand_strings(1, 12)
+        }
 
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white',
-             xlab = 'Waiting time to next eruption (in mins)',
-             main = 'Histogram of waiting times')
+        fs::dir_create(here(SESS_DIR, sess_id))
+
+        state$sess <- list(
+            sess_id = sess_id,
+            stage = "start",
+            date = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
+            language = "de",       # TODO: load from file
+            sentences = list(),    # sentences to be memorized; TODO: load from file
+            questions = list(),    # questions along with possible correct answers; TODO: load from file
+            survey = list()        # post-experiment questionnaire; TODO: load from file
+        )
+
+        save_sess_config(state$sess)
+    })
+
+    output$activeSession <- renderUI({
+        req(state$sess)
+
+        h1(state$sess$sess_id)
     })
 }
 
-# Run the application 
+# Run the application
 shinyApp(ui = ui, server = server)
