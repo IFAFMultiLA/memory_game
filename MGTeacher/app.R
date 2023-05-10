@@ -8,6 +8,12 @@ SESS_ID_CODE_LENGTH <- 8
 SESS_DIR <- fs::path_abs(here("..", "sessions"))
 stopifnot("the sessions directory must exist" = fs::is_dir(SESS_DIR))
 
+TEMPLATES_DIR <- here("templates")
+stopifnot("the templates directory must exist" = fs::is_dir(TEMPLATES_DIR))
+
+DEFAULT_SESSION <- read_yaml(here(TEMPLATES_DIR, "default_session.yaml"))
+
+
 save_sess_config <- function(sess) {
     write_yaml(sess, here(SESS_DIR, sess$sess_id, "session.yaml"))
 }
@@ -78,14 +84,13 @@ server <- function(input, output) {
 
         fs::dir_create(here(SESS_DIR, sess_id))
 
-        state$sess <- list(
-            sess_id = sess_id,
-            stage = "start",
-            date = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
-            language = "de",       # TODO: load from file
-            sentences = list(),    # sentences to be memorized; TODO: load from file
-            questions = list(),    # questions along with possible correct answers; TODO: load from file
-            survey = list()        # post-experiment questionnaire; TODO: load from file
+        state$sess <- c(
+            list(
+                sess_id = sess_id,
+                stage = "start",
+                date = format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+            ),
+            DEFAULT_SESSION
         )
 
         save_sess_config(state$sess)
@@ -135,11 +140,14 @@ server <- function(input, output) {
         req(state$sess)
 
         list(
+            tags$h2("General information"),
             tags$ul(
                 tags$li(sprintf("Date: %s", state$sess$date)),
                 tags$li(sprintf("Language: %s", state$sess$language)),
                 tags$li(sprintf("Current stage: %s", state$sess$stage))
-            )
+            ),
+            tags$h2("Sentences"),
+            tags$ol(lapply(state$sess$sentences, tags$li))
         )
     })
 }

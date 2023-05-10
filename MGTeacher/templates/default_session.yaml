@@ -1,0 +1,25 @@
+language: "en"
+sentences:
+    - The orange kitten was asleep on the green bench.
+    - Business cards are quite expensive to produce.
+    - In the park there were two ducks.
+    - The brown truck crashed into the mailbox.
+    - Five shirts hung from the exercise bicycle in the basement.
+questions:
+    - q: What color was the truck that crashed into the mailbox?
+      a: brown
+    - q: How many hikers were lost in the blizzard?
+      a: [four, "4"]
+    - q: Where were the two ducks?
+      a: "^.*park.*$"
+    - q: How many arrows did Benjamin shoot before hitting the bullseye?
+      a: [three, "3"]
+    - q: Where did Gary wear a plaid flannel shirt?
+      a: "^.*store.*$"
+survey:
+    - label: age
+      text: What is your age?
+      input:
+            required: true
+            type: int
+            range: [18, 99]
