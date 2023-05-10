@@ -1,26 +1,13 @@
 library(shiny)
 library(here)
-library(yaml)
 library(stringi)
 
-
-SESS_ID_CODE_LENGTH <- 8
-SESS_DIR <- fs::path_abs(here("..", "sessions"))
-stopifnot("the sessions directory must exist" = fs::is_dir(SESS_DIR))
+source(here('..', 'common.R'))
 
 TEMPLATES_DIR <- here("templates")
 stopifnot("the templates directory must exist" = fs::is_dir(TEMPLATES_DIR))
 
 DEFAULT_SESSION <- read_yaml(here(TEMPLATES_DIR, "default_session.yaml"))
-
-
-save_sess_config <- function(sess) {
-    write_yaml(sess, here(SESS_DIR, sess$sess_id, "session.yaml"))
-}
-
-load_sess_config <- function(sess_id) {
-    read_yaml(here(SESS_DIR, sess_id, "session.yaml"))
-}
 
 
 ui <- fluidPage(
@@ -110,11 +97,8 @@ server <- function(input, output) {
         req(state$sess)
 
         # directory deletion is a very sensitive operation; perform some checks beforehand
-        stopifnot("session ID must be valid" =
-                      (nchar(state$sess$sess_id) == SESS_ID_CODE_LENGTH) && grepl("^[A-Za-z0-9]+$", state$sess$sess_id))
+        stopifnot("session ID must be valid" = validate_sess_id(state$sess$sess_id))
         sess_dir <- here(SESS_DIR, state$sess$sess_id)
-        stopifnot("session path must point to directory" = fs::is_dir(sess_dir))
-        stopifnot("a session configuration must exist" = fs::file_exists(here(sess_dir, "session.yaml")))
 
         # remove the session directory
         fs::dir_delete(sess_dir)
