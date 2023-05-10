@@ -139,6 +139,14 @@ server <- function(input, output) {
     output$activeSessionContent <- renderUI({
         req(state$sess)
 
+        qa_list <- lapply(state$sess$questions, function(item) {
+            tags$li(item$q, tags$ul(lapply(item$a, tags$li)))
+        })
+
+        survey_list <- lapply(state$sess$survey, function(item) {
+            tags$li(sprintf("%s: %s", item$label, item$text))
+        })
+
         list(
             tags$h2("General information"),
             tags$ul(
@@ -147,7 +155,15 @@ server <- function(input, output) {
                 tags$li(sprintf("Current stage: %s", state$sess$stage))
             ),
             tags$h2("Sentences"),
-            tags$ol(lapply(state$sess$sentences, tags$li))
+            tags$ol(lapply(state$sess$sentences, tags$li)),
+            tags$h2("Further information"),
+            tags$div(
+                tags$h3("Questions and answers"),
+                tags$ol(qa_list),
+                tags$h3("Survey"),
+                tags$ol(survey_list),
+                id = "session_info_container"
+            )
         )
     })
 }
