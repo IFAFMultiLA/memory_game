@@ -5,6 +5,8 @@ SESS_ID_CODE_LENGTH <- 8
 SESS_DIR <- fs::path_abs(here("..", "sessions"))
 stopifnot("the sessions directory must exist" = fs::is_dir(SESS_DIR))
 
+STAGES <- c("start", "directions", "questions", "results", "end")
+
 
 validate_sess_id <- function(sess_id) {
     if (length(sess_id) != 1) return(FALSE)

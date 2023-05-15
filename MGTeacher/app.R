@@ -78,13 +78,13 @@ server <- function(input, output) {
                 sess_id = sess_id,
                 stage = "start",
                 date = now,
-            ),
-            stage_timestamps = list(
-                start = now,
-                directions = NULL,
-                questions = NULL,
-                results = NULL,
-                end = NULL
+                stage_timestamps = list(
+                    start = now,
+                    directions = NULL,
+                    questions = NULL,
+                    results = NULL,
+                    end = NULL
+                )
             ),
             DEFAULT_SESSION
         )
@@ -117,6 +117,18 @@ server <- function(input, output) {
         removeModal()
     })
 
+    observeEvent(input$advanceSession, {
+        req(state$sess)
+
+        cur_stage_index <- which(state$sess$stage == STAGES)
+        stopifnot(length(cur_stage_index) == 1)
+
+        if (cur_stage_index < length(STAGES)) {
+            state$sess$stage <- STAGES[cur_stage_index + 1]
+            save_sess_config(state$sess)
+        }
+    })
+
     output$sessionsList <- renderUI({
         updateAvailSessions()
 
@@ -137,13 +149,21 @@ server <- function(input, output) {
             directions = "Show questions",
             questions = "Show results",
             results = "End",
-            end = NULL
+            end = "Session has ended"
         )
+
+        adv_sess_btn_args <- list(inputId = "advanceSession", label = next_action_label, class = "btn-success",
+                                  style = "margin: 0 auto 15px auto; display: block")
+
+        if (state$sess$stage == "end") {
+            adv_sess_btn_args$disabled <- "disabled"
+            print(adv_sess_btn_args$disabled)
+        }
 
         div(
             div(p(sprintf("Current stage: %s", state$sess$stage)),
                 class = "alert alert-info", style = "text-align: center"),
-            div(actionButton("advanceSession", next_action_label, class = "btn-success", style = "margin: 0 auto 15px auto; display: block"), style = "width: 100%"),
+            div(do.call(actionButton, adv_sess_btn_args), style = "width: 100%"),
             div(p(sprintf("Creation date: %s | Language: %s", state$sess$date, state$sess$language)),
                 class = "alert alert-warning")
         )
