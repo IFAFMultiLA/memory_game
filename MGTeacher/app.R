@@ -11,7 +11,7 @@ DEFAULT_SESSION <- read_yaml(here(TEMPLATES_DIR, "default_session.yaml"))
 
 
 ui <- fluidPage(
-    # Application title
+    tags$script(src = "custom.js"),    # custom JS
     titlePanel("Shrager Memory Game: Teacher App"),
 
     sidebarLayout(
@@ -30,7 +30,7 @@ ui <- fluidPage(
     )
 )
 
-server <- function(input, output) {
+server <- function(input, output, session) {
     state <- reactiveValues(
         sess = NULL,
         available_sessions = character()
@@ -71,7 +71,7 @@ server <- function(input, output) {
         }
 
         fs::dir_create(here(SESS_DIR, sess_id))
-        now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+        now <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S")
 
         state$sess <- c(
             list(
@@ -90,11 +90,13 @@ server <- function(input, output) {
         )
 
         save_sess_config(state$sess)
+        session$sendCustomMessage("session_advanced", state$sess$stage)
     })
 
     observeEvent(input$sessionsSelect, {
         req(input$sessionsSelect)
         state$sess <- load_sess_config(input$sessionsSelect)
+        session$sendCustomMessage("session_advanced", state$sess$stage)
     })
 
     observeEvent(input$deleteSession, {
@@ -125,7 +127,9 @@ server <- function(input, output) {
 
         if (cur_stage_index < length(STAGES)) {
             state$sess$stage <- STAGES[cur_stage_index + 1]
+            state$sess$stage_timestamps[[state$sess$stage]] <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S")
             save_sess_config(state$sess)
+            session$sendCustomMessage("session_advanced", state$sess$stage)
         }
     })
 
@@ -157,14 +161,16 @@ server <- function(input, output) {
 
         if (state$sess$stage == "end") {
             adv_sess_btn_args$disabled <- "disabled"
-            print(adv_sess_btn_args$disabled)
         }
 
         div(
-            div(p(sprintf("Current stage: %s", state$sess$stage)),
+            div(p("Current stage: ", span(state$sess$stage, id = "current_stage")),
                 class = "alert alert-info", style = "text-align: center"),
             div(do.call(actionButton, adv_sess_btn_args), style = "width: 100%"),
-            div(p(sprintf("Creation date: %s | Language: %s", state$sess$date, state$sess$language)),
+            div(div(state$sess$stage_timestamps[[state$sess$stage]], id = "stage_timestamp", style = "display: none"),
+                p("Time elapsed in current game stage:", id = "stage_timer_intro"),
+                p("", id = "stage_timer", style = "text-align: center; font-weight: bold"),
+                p(sprintf("Creation date: %s | Language: %s", state$sess$date, state$sess$language)),
                 class = "alert alert-warning")
         )
     })
