@@ -23,6 +23,7 @@ ui <- fluidPage(
             conditionalPanel("input.sessionsSelect",
                 actionButton("deleteSession", "Delete this session", class = "btn-danger", style = "float: right"),
                 h1(textOutput("activeSessionTitle")),
+                uiOutput("activeSessionMainInfo"),
                 uiOutput("activeSessionContent")
             )
         )
@@ -70,12 +71,20 @@ server <- function(input, output) {
         }
 
         fs::dir_create(here(SESS_DIR, sess_id))
+        now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
 
         state$sess <- c(
             list(
                 sess_id = sess_id,
                 stage = "start",
-                date = format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+                date = now,
+            ),
+            stage_timestamps = list(
+                start = now,
+                directions = NULL,
+                questions = NULL,
+                results = NULL,
+                end = NULL
             ),
             DEFAULT_SESSION
         )
@@ -120,6 +129,26 @@ server <- function(input, output) {
         sprintf("Session %s", state$sess$sess_id)
     })
 
+    output$activeSessionMainInfo <- renderUI({
+        req(state$sess)
+
+        next_action_label <- switch (state$sess$stage,
+            start = "Show directions",
+            directions = "Show questions",
+            questions = "Show results",
+            results = "End",
+            end = NULL
+        )
+
+        div(
+            div(p(sprintf("Current stage: %s", state$sess$stage)),
+                class = "alert alert-info", style = "text-align: center"),
+            div(actionButton("advanceSession", next_action_label, class = "btn-success", style = "margin: 0 auto 15px auto; display: block"), style = "width: 100%"),
+            div(p(sprintf("Creation date: %s | Language: %s", state$sess$date, state$sess$language)),
+                class = "alert alert-warning")
+        )
+    })
+
     output$activeSessionContent <- renderUI({
         req(state$sess)
 
@@ -132,12 +161,6 @@ server <- function(input, output) {
         })
 
         list(
-            tags$h2("General information"),
-            tags$ul(
-                tags$li(sprintf("Date: %s", state$sess$date)),
-                tags$li(sprintf("Language: %s", state$sess$language)),
-                tags$li(sprintf("Current stage: %s", state$sess$stage))
-            ),
             tags$h2("Sentences"),
             tags$ol(lapply(state$sess$sentences, tags$li)),
             tags$h2("Further information"),
