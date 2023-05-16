@@ -26,8 +26,12 @@ display_directions <- function(sess, group) {
 }
 
 display_questions <- function(sess, group) {
-    list_items <- lapply(sess$questions, function(item) {
-        tags$li(item$q)
+    list_items <- lapply(1:length(sess$questions), function(i) {
+        item <- sess$questions[[i]]
+        tags$li(
+            span(item$q),
+            textInput(inputId = sprintf("answer_%s", i), label = NULL)
+        )
     })
     tags$ol(list_items, id = "questions")
 }
@@ -41,49 +45,58 @@ display_end <- function(sess, group) {
 }
 
 server <- function(input, output, session) {
-    # note: reactive value objects like "group" are actually functions; use group() to read its value and
-    # group(<arg>) to set its value; see ?shiny::reactiveVal for more information
-    group <- reactiveVal()    # initially NULL; on start either "control" or "treatment"
-    sess_id_was_set <- reactiveVal(FALSE)
-    group_was_set <- reactiveVal(FALSE)
+    state <- reactiveValues(
+        sess_id = NULL,
+        sess = NULL,
+        group = NULL,
+        sess_id_was_set = FALSE,
+        group_was_set = FALSE
+    )
 
-    observeEvent(input$group, {
-        print(paste("got group from JS:", input$group))
-        isolate(group(input$group))
-        group_was_set(TRUE)
-    })
-
-    output$mainContent <- renderUI({
+    observe({
         params <- getQueryString()
         sess_id <- params$sess_id
+
         if (is.null(sess_id) || !validate_sess_id(sess_id)) {
             showModal(modalDialog("Invalid session ID or session ID not given.", footer = NULL))
         } else {
+            state$sess_id <- sess_id
+
             invalidateLater(SESSION_REFRESH_TIME)
 
-            if (!sess_id_was_set()) {
-                session$sendCustomMessage("set_sess_id", sess_id);
-                isolate(sess_id_was_set(TRUE))
+            if (!state$sess_id_was_set) {
+                session$sendCustomMessage("set_sess_id", state$sess_id);
+                isolate(state$sess_id_was_set <- TRUE)
             }
 
-            if (group_was_set() && group() == "unassigned") {
-                isolate(group(sample(c("control", "treatment"), size = 1)))
-                print(sprintf("random assignment to %s", group()))
-                session$sendCustomMessage("set_group", group());
+            if (state$group_was_set && state$group == "unassigned") {
+                isolate(state$group <- sample(c("control", "treatment"), size = 1))
+                print(sprintf("random assignment to %s", state$group))
+                session$sendCustomMessage("set_group", state$group);
             }
 
-            sess <- load_sess_config(sess_id)
-
-            display_fn <- switch (sess$stage,
-                start = display_start,
-                directions = display_directions,
-                questions = display_questions,
-                results = display_results,
-                end = display_end
-            )
-
-            do.call(display_fn, list(sess = sess, group = group()))
+            state$sess <- load_sess_config(state$sess_id)
         }
+    })
+
+    observeEvent(input$group, {
+        print(paste("got group from JS:", input$group))
+        isolate(state$group <- input$group)   # doesn't trigger update
+        state$group_was_set <- TRUE    # triggers update
+    })
+
+    output$mainContent <- renderUI({
+        req(state$sess)
+
+        display_fn <- switch (state$sess$stage,
+            start = display_start,
+            directions = display_directions,
+            questions = display_questions,
+            results = display_results,
+            end = display_end
+        )
+
+        do.call(display_fn, list(sess = state$sess, group = state$group))
     })
 }
 
