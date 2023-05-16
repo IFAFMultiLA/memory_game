@@ -108,7 +108,8 @@ server <- function(input, output, session) {
         req(state$sess)
 
         # directory deletion is a very sensitive operation; perform some checks beforehand
-        stopifnot("session ID must be valid" = validate_sess_id(state$sess$sess_id))
+        stopifnot("session ID must be valid" = validate_id(state$sess$sess_id, SESS_ID_CODE_LENGTH,
+                                                           expect_session_dir = TRUE))
         sess_dir <- here(SESS_DIR, state$sess$sess_id)
 
         # remove the session directory

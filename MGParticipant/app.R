@@ -1,9 +1,25 @@
 library(shiny)
 library(here)
+library(stringi)
 
 source(here('..', 'common.R'))
 
 SESSION_REFRESH_TIME <- 1000   # session refresh timer in milliseconds
+
+save_user_data <- function(sess_id, user_id, user_data) {
+    saveRDS(c(list(user_id = user_id), user_data),
+            here(SESS_DIR, sess_id, paste0("user_", user_id, ".rds")))
+}
+
+load_user_data <- function(sess_id, user_id) {
+    file <- here(SESS_DIR, sess_id, paste0("user_", user_id, ".rds"))
+    if (fs::file_exists(file)) {
+        readRDS(file)
+    } else {
+        NULL
+    }
+}
+
 
 ui <- fluidPage(
     tags$script(src = "js.cookie.min.js"),    # cookie JS library
@@ -15,9 +31,9 @@ ui <- fluidPage(
     )
 )
 
-
 server <- function(input, output, session) {
     state <- reactiveValues(
+        user_id = NULL,
         sess_id = NULL,
         sess = NULL,
         group = NULL,
@@ -30,7 +46,7 @@ server <- function(input, output, session) {
         params <- getQueryString()
         sess_id <- params$sess_id
 
-        if (is.null(sess_id) || !validate_sess_id(sess_id)) {
+        if (is.null(sess_id) || !validate_id(sess_id, SESS_ID_CODE_LENGTH)) {
             showModal(modalDialog("Invalid session ID or session ID not given.", footer = NULL))
         } else {
             state$sess_id <- sess_id
@@ -52,15 +68,41 @@ server <- function(input, output, session) {
         }
     })
 
+    observeEvent(input$user_id, {
+        print(paste("got user_id via JS:", input$user_id))
+
+        if (input$user_id == "unassigned") {
+            user_id <- NULL
+            while (is.null(user_id) || fs::file_exists(here(SESS_DIR, state$sess_id, paste0(user_id, ".rds")))) {
+                user_id <- stri_rand_strings(1, USER_ID_CODE_LENGTH)
+            }
+
+            # save empty user data just to claim the ID
+            save_user_data(state$sess_id, user_id, list(user_results = NULL))
+            isolate(state$user_id <- user_id)
+            session$sendCustomMessage("set_user_id", state$user_id);
+        } else if (validate_id(input$user_id, USER_ID_CODE_LENGTH)) {
+            user_id <- input$user_id
+        } else {
+            user_id <- NULL
+        }
+
+        print(paste("setting user ID to", user_id))
+        state$user_id <- user_id
+    })
+
     observeEvent(input$group, {
-        print(paste("got group from JS:", input$group))
+        print(paste("got group via JS:", input$group))
         isolate(state$group <- input$group)   # doesn't trigger update
         state$group_was_set <- TRUE    # triggers update
     })
 
     observeEvent(input$submit_answers, {
+        print(state$user_id)
+        print(state$user_results)
         req(state$sess)
         req(state$sess$stage == "questions")
+        req(state$user_id)
         req(is.null(state$user_results))
 
         # check answers
@@ -89,6 +131,8 @@ server <- function(input, output, session) {
                 FALSE
             }
         })
+
+        save_user_data(state$sess_id, state$user_id, list(user_results = state$user_results))
     })
 
     display_start <- function() {
@@ -102,6 +146,9 @@ server <- function(input, output, session) {
     }
 
     display_questions <- function() {
+        user_data <- load_user_data(state$sess_id, state$user_id)
+        state$user_results <- user_data$user_results
+
         list_items <- lapply(1:length(state$sess$questions), function(i) {
             item <- state$sess$questions[[i]]
 
