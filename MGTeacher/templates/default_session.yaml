@@ -19,6 +19,7 @@ messages:
         <p>The teacher will read the class a list of statements.   You may not write anything down and you may not talk or communicate with anyone.  After the list of statements is complete, everyone in the class will silently attempt to answer a series of questions regarding the statements you just heard.  Answers will be marked either right or wrong, and your answer sheet will be anonymous.</p>
 
         <p>You will be handed the list of questions as soon as the teacher finishes reading the statements.  For the next few minutes, your task is to <strong>LISTEN</strong> quietly.   The <strong>BEST TECHNIQUE</strong> for short term memory recall is to <strong>VISUALIZE</strong> whatever you hear.  For example, if the teacher says “the red motorcycle was in the barn,” you might picture a red motorcycle in a barn.  <strong>ATTEMPT TO VISUALIZE IN YOUR MIND</strong> all of the statements the teacher reads!</p>
+    results_summary: You had %d correct answers.
     end: The game has ended.
 questions:
     - q: What color was the truck that crashed into the mailbox?

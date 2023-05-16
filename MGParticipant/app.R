@@ -15,34 +15,6 @@ ui <- fluidPage(
     )
 )
 
-display_start <- function(sess, group) {
-    div(sess$messages$not_started, class = "alert alert-info", style = "text-align: center")
-}
-
-display_directions <- function(sess, group) {
-    msg_key <- paste0("directions_", group)
-    directions <- sess$messages[[msg_key]]
-    div(HTML(directions))
-}
-
-display_questions <- function(sess, group) {
-    list_items <- lapply(1:length(sess$questions), function(i) {
-        item <- sess$questions[[i]]
-        tags$li(
-            span(item$q),
-            textInput(inputId = sprintf("answer_%s", i), label = NULL)
-        )
-    })
-    tags$ol(list_items, id = "questions")
-}
-
-display_results <- function(sess, group) {
-    p(paste("results;", group))
-}
-
-display_end <- function(sess, group) {
-    div(sess$messages$end, class = "alert alert-info", style = "text-align: center")
-}
 
 server <- function(input, output, session) {
     state <- reactiveValues(
@@ -50,7 +22,8 @@ server <- function(input, output, session) {
         sess = NULL,
         group = NULL,
         sess_id_was_set = FALSE,
-        group_was_set = FALSE
+        group_was_set = FALSE,
+        user_results = NULL
     )
 
     observe({
@@ -85,6 +58,91 @@ server <- function(input, output, session) {
         state$group_was_set <- TRUE    # triggers update
     })
 
+    observeEvent(input$submit_answers, {
+        req(state$sess)
+        req(state$sess$stage == "questions")
+        req(is.null(state$user_results))
+
+        # check answers
+        state$user_results <- sapply(1:length(state$sess$questions), function(i) {
+            solutions <- state$sess$questions[[i]]$a
+            user_answer <- trimws(input[[sprintf("answer_%s", i)]])
+
+            if (nchar(user_answer) > 0) {
+                regex_solutions <- startsWith(solutions, "^")
+
+                correct <- FALSE
+
+                if (sum(regex_solutions) > 0) {
+                    # apply regex based solution matching
+                    correct <- correct || any(sapply(solutions[regex_solutions], grepl, user_answer, ignore.case = TRUE))
+                }
+
+                if (sum(!regex_solutions) > 0) {
+                    # apply non-regex based solution matching
+                    correct <- correct || any(tolower(user_answer) == tolower(solutions[!regex_solutions]))
+                }
+
+                correct
+            } else {
+                # empty answers are always wrong
+                FALSE
+            }
+        })
+    })
+
+    display_start <- function() {
+        div(state$sess$messages$not_started, class = "alert alert-info", style = "text-align: center")
+    }
+
+    display_directions <- function() {
+        msg_key <- paste0("directions_", state$group)
+        directions <- state$sess$messages[[msg_key]]
+        div(HTML(directions))
+    }
+
+    display_questions <- function() {
+        list_items <- lapply(1:length(state$sess$questions), function(i) {
+            item <- state$sess$questions[[i]]
+
+            if (!is.null(state$user_results)) {
+                answ <- span(
+                    span(input[[sprintf("answer_%s", i)]], style = "color: #666666"),
+                    ifelse(state$user_results[i], "✅",  "❌")
+                )
+            } else {
+                answ <- textInput(inputId = sprintf("answer_%s", i), label = NULL)
+            }
+
+            tags$li(
+                div(item$q),
+                answ
+            )
+        })
+
+        if (is.null(state$user_results)) {
+            bottom_elem <- div(actionButton("submit_answers", "Submit answers", class = "btn-success"),
+                               id = "submit_container")
+        } else {
+            n_correct <- sum(state$user_results)
+            bottom_elem <- p(sprintf(state$sess$messages$results_summary, n_correct),
+                             style = "font-weight: bold; text-align: center")
+        }
+
+        div(
+            tags$ol(list_items, id = "questions"),
+            bottom_elem
+        )
+    }
+
+    display_results <- function() {
+
+    }
+
+    display_end <- function() {
+        div(state$sess$messages$end, class = "alert alert-info", style = "text-align: center")
+    }
+
     output$mainContent <- renderUI({
         req(state$sess)
 
@@ -96,7 +154,7 @@ server <- function(input, output, session) {
             end = display_end
         )
 
-        do.call(display_fn, list(sess = state$sess, group = state$group))
+        display_fn()
     })
 }
 

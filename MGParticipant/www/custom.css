@@ -6,3 +6,13 @@
 #questions li {
     margin-bottom: 1em;
 }
+
+#submit_container {
+    width: 100%;
+}
+
+#submit_container button {
+    font-size: 1em;
+    margin: 0 auto 0 auto;
+    display: block;
+}
