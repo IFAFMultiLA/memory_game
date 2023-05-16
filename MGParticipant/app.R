@@ -98,17 +98,17 @@ server <- function(input, output, session) {
     })
 
     observeEvent(input$submit_answers, {
-        print(state$user_id)
-        print(state$user_results)
         req(state$sess)
         req(state$sess$stage == "questions")
         req(state$user_id)
         req(is.null(state$user_results))
 
         # check answers
+        user_answers <- character(length(state$sess$questions))
         state$user_results <- sapply(1:length(state$sess$questions), function(i) {
             solutions <- state$sess$questions[[i]]$a
             user_answer <- trimws(input[[sprintf("answer_%s", i)]])
+            user_answers[i] <- user_answer
 
             if (nchar(user_answer) > 0) {
                 regex_solutions <- startsWith(solutions, "^")
@@ -132,7 +132,12 @@ server <- function(input, output, session) {
             }
         })
 
-        save_user_data(state$sess_id, state$user_id, list(user_results = state$user_results))
+        save_user_data(state$sess_id, state$user_id,
+            list(
+               user_results = state$user_results,
+               user_answers = user_answers
+            )
+        )
     })
 
     display_start <- function() {
@@ -148,13 +153,15 @@ server <- function(input, output, session) {
     display_questions <- function() {
         user_data <- load_user_data(state$sess_id, state$user_id)
         state$user_results <- user_data$user_results
+        user_answers <- user_data$user_answers
 
         list_items <- lapply(1:length(state$sess$questions), function(i) {
             item <- state$sess$questions[[i]]
 
             if (!is.null(state$user_results)) {
                 answ <- span(
-                    span(input[[sprintf("answer_%s", i)]], style = "color: #666666"),
+                    span(ifelse(is.null(user_answers), input[[sprintf("answer_%s", i)]], user_answers[i]),
+                         style = "color: #666666"),
                     ifelse(state$user_results[i], "✅",  "❌")
                 )
             } else {
