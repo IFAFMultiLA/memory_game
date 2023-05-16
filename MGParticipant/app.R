@@ -8,7 +8,8 @@ SESSION_REFRESH_TIME <- 1000   # session refresh timer in milliseconds
 ui <- fluidPage(
     tags$script(src = "js.cookie.min.js"),    # cookie JS library
     tags$script(src = "custom.js"),    # custom JS
-    titlePanel("Shrager Memory Game: Participant App"),
+    tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),   # custom CSS
+    # titlePanel("Shrager Memory Game: Participant App"),
     verticalLayout(
         uiOutput("mainContent")
     )
@@ -19,11 +20,16 @@ display_start <- function(sess, group) {
 }
 
 display_directions <- function(sess, group) {
-    p(paste("directions;", group))
+    msg_key <- paste0("directions_", group)
+    directions <- sess$messages[[msg_key]]
+    div(HTML(directions))
 }
 
 display_questions <- function(sess, group) {
-    p(paste("questions;", group))
+    list_items <- lapply(sess$questions, function(item) {
+        tags$li(item$q)
+    })
+    tags$ol(list_items, id = "questions")
 }
 
 display_results <- function(sess, group) {
@@ -62,13 +68,11 @@ server <- function(input, output, session) {
 
             if (group_was_set() && group() == "unassigned") {
                 isolate(group(sample(c("control", "treatment"), size = 1)))
-                print("random assignment")
+                print(sprintf("random assignment to %s", group()))
                 session$sendCustomMessage("set_group", group());
             }
 
             sess <- load_sess_config(sess_id)
-
-            print(group())
 
             display_fn <- switch (sess$stage,
                 start = display_start,
