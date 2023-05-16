@@ -15,75 +15,146 @@ ui <- fluidPage(
     )
 )
 
-display_start <- function(sess, group) {
-    div(sess$messages$not_started, class = "alert alert-info", style = "text-align: center")
-}
-
-display_directions <- function(sess, group) {
-    msg_key <- paste0("directions_", group)
-    directions <- sess$messages[[msg_key]]
-    div(HTML(directions))
-}
-
-display_questions <- function(sess, group) {
-    list_items <- lapply(sess$questions, function(item) {
-        tags$li(item$q)
-    })
-    tags$ol(list_items, id = "questions")
-}
-
-display_results <- function(sess, group) {
-    p(paste("results;", group))
-}
-
-display_end <- function(sess, group) {
-    div(sess$messages$end, class = "alert alert-info", style = "text-align: center")
-}
 
 server <- function(input, output, session) {
-    # note: reactive value objects like "group" are actually functions; use group() to read its value and
-    # group(<arg>) to set its value; see ?shiny::reactiveVal for more information
-    group <- reactiveVal()    # initially NULL; on start either "control" or "treatment"
-    sess_id_was_set <- reactiveVal(FALSE)
-    group_was_set <- reactiveVal(FALSE)
+    state <- reactiveValues(
+        sess_id = NULL,
+        sess = NULL,
+        group = NULL,
+        sess_id_was_set = FALSE,
+        group_was_set = FALSE,
+        user_results = NULL
+    )
 
-    observeEvent(input$group, {
-        print(paste("got group from JS:", input$group))
-        isolate(group(input$group))
-        group_was_set(TRUE)
-    })
-
-    output$mainContent <- renderUI({
+    observe({
         params <- getQueryString()
         sess_id <- params$sess_id
+
         if (is.null(sess_id) || !validate_sess_id(sess_id)) {
             showModal(modalDialog("Invalid session ID or session ID not given.", footer = NULL))
         } else {
+            state$sess_id <- sess_id
+
             invalidateLater(SESSION_REFRESH_TIME)
 
-            if (!sess_id_was_set()) {
-                session$sendCustomMessage("set_sess_id", sess_id);
-                isolate(sess_id_was_set(TRUE))
+            if (!state$sess_id_was_set) {
+                session$sendCustomMessage("set_sess_id", state$sess_id);
+                isolate(state$sess_id_was_set <- TRUE)
             }
 
-            if (group_was_set() && group() == "unassigned") {
-                isolate(group(sample(c("control", "treatment"), size = 1)))
-                print(sprintf("random assignment to %s", group()))
-                session$sendCustomMessage("set_group", group());
+            if (state$group_was_set && state$group == "unassigned") {
+                isolate(state$group <- sample(c("control", "treatment"), size = 1))
+                print(sprintf("random assignment to %s", state$group))
+                session$sendCustomMessage("set_group", state$group);
             }
 
-            sess <- load_sess_config(sess_id)
-
-            display_fn <- switch (sess$stage,
-                start = display_start,
-                directions = display_directions,
-                questions = display_questions,
-                results = display_results,
-                end = display_end
-            )
-
-            do.call(display_fn, list(sess = sess, group = group()))
+            state$sess <- load_sess_config(state$sess_id)
         }
+    })
+
+    observeEvent(input$group, {
+        print(paste("got group from JS:", input$group))
+        isolate(state$group <- input$group)   # doesn't trigger update
+        state$group_was_set <- TRUE    # triggers update
+    })
+
+    observeEvent(input$submit_answers, {
+        req(state$sess)
+        req(state$sess$stage == "questions")
+        req(is.null(state$user_results))
+
+        # check answers
+        state$user_results <- sapply(1:length(state$sess$questions), function(i) {
+            solutions <- state$sess$questions[[i]]$a
+            user_answer <- trimws(input[[sprintf("answer_%s", i)]])
+
+            if (nchar(user_answer) > 0) {
+                regex_solutions <- startsWith(solutions, "^")
+
+                correct <- FALSE
+
+                if (sum(regex_solutions) > 0) {
+                    # apply regex based solution matching
+                    correct <- correct || any(sapply(solutions[regex_solutions], grepl, user_answer, ignore.case = TRUE))
+                }
+
+                if (sum(!regex_solutions) > 0) {
+                    # apply non-regex based solution matching
+                    correct <- correct || any(tolower(user_answer) == tolower(solutions[!regex_solutions]))
+                }
+
+                correct
+            } else {
+                # empty answers are always wrong
+                FALSE
+            }
+        })
+    })
+
+    display_start <- function() {
+        div(state$sess$messages$not_started, class = "alert alert-info", style = "text-align: center")
+    }
+
+    display_directions <- function() {
+        msg_key <- paste0("directions_", state$group)
+        directions <- state$sess$messages[[msg_key]]
+        div(HTML(directions))
+    }
+
+    display_questions <- function() {
+        list_items <- lapply(1:length(state$sess$questions), function(i) {
+            item <- state$sess$questions[[i]]
+
+            if (!is.null(state$user_results)) {
+                answ <- span(
+                    span(input[[sprintf("answer_%s", i)]], style = "color: #666666"),
+                    ifelse(state$user_results[i], "✅",  "❌")
+                )
+            } else {
+                answ <- textInput(inputId = sprintf("answer_%s", i), label = NULL)
+            }
+
+            tags$li(
+                div(item$q),
+                answ
+            )
+        })
+
+        if (is.null(state$user_results)) {
+            bottom_elem <- div(actionButton("submit_answers", "Submit answers", class = "btn-success"),
+                               id = "submit_container")
+        } else {
+            n_correct <- sum(state$user_results)
+            bottom_elem <- p(sprintf(state$sess$messages$results_summary, n_correct),
+                             style = "font-weight: bold; text-align: center")
+        }
+
+        div(
+            tags$ol(list_items, id = "questions"),
+            bottom_elem
+        )
+    }
+
+    display_results <- function() {
+
+    }
+
+    display_end <- function() {
+        div(state$sess$messages$end, class = "alert alert-info", style = "text-align: center")
+    }
+
+    output$mainContent <- renderUI({
+        req(state$sess)
+
+        display_fn <- switch (state$sess$stage,
+            start = display_start,
+            directions = display_directions,
+            questions = display_questions,
+            results = display_results,
+            end = display_end
+        )
+
+        display_fn()
     })
 }
 
