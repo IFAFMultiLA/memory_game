@@ -36,6 +36,10 @@ server <- function(input, output, session) {
         available_sessions = character()
     )
 
+    hasSurvey <- function() {
+        !is.null(state$sess$survey) && length(state$sess$survey) > 0
+    }
+
     updateAvailSessions <- function() {
         session_dirs <- fs::dir_ls(here(SESS_DIR), type = "directory")
         session_dates <- sapply(as.character(session_dirs), function(d) {
@@ -82,6 +86,7 @@ server <- function(input, output, session) {
                     start = now,
                     directions = NULL,
                     questions = NULL,
+                    survey = NULL,
                     results = NULL,
                     end = NULL
                 )
@@ -127,7 +132,13 @@ server <- function(input, output, session) {
         stopifnot(length(cur_stage_index) == 1)
 
         if (cur_stage_index < length(STAGES)) {
-            state$sess$stage <- STAGES[cur_stage_index + 1]
+            if (!hasSurvey() && state$sess$stage == "questions") {
+                incr <- 2  # skip survey
+            } else {
+                incr <- 1
+            }
+
+            state$sess$stage <- STAGES[cur_stage_index + incr]
             state$sess$stage_timestamps[[state$sess$stage]] <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S")
             save_sess_config(state$sess)
             session$sendCustomMessage("session_advanced", state$sess$stage)
@@ -152,7 +163,8 @@ server <- function(input, output, session) {
         next_action_label <- switch (state$sess$stage,
             start = "Show directions",
             directions = "Show questions",
-            questions = "Show results",
+            questions = ifelse(hasSurvey(), "Show survey", "Show results"),
+            survey = "Show results",
             results = "End",
             end = "Session has ended"
         )
