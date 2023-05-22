@@ -6,7 +6,7 @@ USER_ID_CODE_LENGTH <- 12
 SESS_DIR <- fs::path_abs(here("..", "sessions"))
 stopifnot("the sessions directory must exist" = fs::is_dir(SESS_DIR))
 
-STAGES <- c("start", "directions", "questions", "results", "end")
+STAGES <- c("start", "directions", "questions", "survey", "results", "end")
 
 
 validate_id <- function(id, expected_length, expect_session_dir = FALSE) {

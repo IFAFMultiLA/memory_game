@@ -29,6 +29,39 @@ load_user_data <- function(sess_id, user_id) {
     res
 }
 
+survey_input_int <- function(item) {
+    args <- list(
+        id = item$label,
+        name = item$label,
+        type = "number",
+        step = "1"
+    )
+
+    if (!is.null(item$input$range)) {
+        args$min <- item$range[1]
+        args$max <- item$range[2]
+    }
+
+    if (!is.null(item$input$required) && item$input$required) {
+        args$required <- "required"
+    }
+
+    do.call(tags$input, args)
+}
+
+survey_input_text <- function(item) {
+    args <- list(
+        id = item$label,
+        name = item$label,
+        type = "text"
+    )
+
+    if (!is.null(item$input$required) && item$input$required) {
+        args$required <- "required"
+    }
+
+    do.call(tags$input, args)
+}
 
 ui <- fluidPage(
     tags$script(src = "js.cookie.min.js"),    # cookie JS library
@@ -204,6 +237,23 @@ server <- function(input, output, session) {
         )
     }
 
+    display_survey <- function() {
+        survey_items <- lapply(state$sess$survey, function(item) {
+            survey_input_fn <- switch (item$input$type,
+                int = survey_input_int,
+                text = survey_input_text
+            )
+
+            tags$li(tags$label(item$text, `for` = item$label), survey_input_fn(item))
+        })
+
+        div(
+            tags$ol(survey_items, id = "survey"),
+            div(actionButton("submit_survey", "Submit answers", class = "btn-success"),
+                id = "submit_container")
+        )
+    }
+
     display_results <- function() {
 
     }
@@ -219,6 +269,7 @@ server <- function(input, output, session) {
             start = display_start,
             directions = display_directions,
             questions = display_questions,
+            survey = display_survey,
             results = display_results,
             end = display_end
         )
