@@ -1,6 +1,7 @@
 library(shiny)
 library(here)
 library(stringi)
+library(dplyr)
 
 source(here('..', 'common.R'))
 
@@ -297,7 +298,13 @@ server <- function(input, output, session) {
     }
 
     display_results <- function() {
-
+        sess_data <- data_for_session(state$sess_id, survey_labels_for_session(state$sess))
+        summ_data <- group_by(sess_data, group) |>
+            summarise(n = n(),
+                      total_correct = sum(n_correct),
+                      mean_correct = mean(n_correct),
+                      sd_correct = sd(n_correct))
+        t(summ_data)
     }
 
     display_end <- function() {
