@@ -10,9 +10,23 @@ user_data_path <- function(sess_id, user_id) {
     here(SESS_DIR, sess_id, paste0("user_", user_id, ".rds"))
 }
 
-save_user_data <- function(sess_id, user_id, group, user_data) {
+save_user_data <- function(sess_id, user_id, group, user_data, update = FALSE) {
     print("saving user data")
     print(user_data)
+
+    if (update) {
+        existing_data <- load_user_data(sess_id, user_id)$user_data
+        if (is.null(existing_data)) {
+            existing_data <- list()
+        }
+
+        for (k in names(user_data)) {
+            existing_data[[k]] <- user_data[[k]]
+        }
+
+        user_data <- existing_data
+    }
+
     saveRDS(c(list(user_id = user_id, group = group), user_data),
             here(SESS_DIR, sess_id, paste0("user_", user_id, ".rds")))
 }
@@ -30,9 +44,11 @@ load_user_data <- function(sess_id, user_id) {
 }
 
 survey_input_int <- function(item) {
+    lbl <- paste0("survey_", item$label)
+
     args <- list(
-        id = item$label,
-        name = item$label,
+        id = lbl,
+        name = lbl,
         type = "number",
         step = "1"
     )
@@ -50,9 +66,11 @@ survey_input_int <- function(item) {
 }
 
 survey_input_text <- function(item) {
+    lbl <- paste0("survey_", item$label)
+
     args <- list(
-        id = item$label,
-        name = item$label,
+        id = lbl,
+        name = lbl,
         type = "text"
     )
 
@@ -82,7 +100,8 @@ server <- function(input, output, session) {
         sess_id_was_set = FALSE,
         group_was_set = FALSE,
         user_results = NULL,
-        user_answers = NULL
+        user_answers = NULL,
+        survey_answers = NULL
     )
 
     observe({
@@ -188,6 +207,22 @@ server <- function(input, output, session) {
         )
     })
 
+    observeEvent(input$submit_survey, {
+        req(state$sess)
+        req(state$sess$stage == "survey")
+        req(state$user_id)
+        req(is.null(state$survey_answers))
+
+        survey_answers <- sapply(state$sess$survey, function(item) {
+            as.character(input[[paste0("survey_", item$label)]])
+        })
+
+        # save survey data for this session and user ID
+        state$survey_answers <- survey_answers
+        save_user_data(state$sess_id, state$user_id, state$group, list(survey_answers = state$survey_answers),
+                       update = TRUE)
+    })
+
     display_start <- function() {
         div(state$sess$messages$not_started, class = "alert alert-info", style = "text-align: center")
     }
@@ -223,7 +258,7 @@ server <- function(input, output, session) {
         })
 
         if (is.null(state$user_results)) {
-            bottom_elem <- div(actionButton("submit_answers", "Submit answers", class = "btn-success"),
+            bottom_elem <- div(actionButton("submit_answers", "Submit", class = "btn-success"),
                                id = "submit_container")
         } else {
             n_correct <- sum(state$user_results)
@@ -238,20 +273,27 @@ server <- function(input, output, session) {
     }
 
     display_survey <- function() {
-        survey_items <- lapply(state$sess$survey, function(item) {
-            survey_input_fn <- switch (item$input$type,
-                int = survey_input_int,
-                text = survey_input_text
+        user_data <- load_user_data(state$sess_id, state$user_id)
+        state$survey_answers <- user_data$survey_answers
+
+        if (is.null(state$survey_answers)) {
+            survey_items <- lapply(state$sess$survey, function(item) {
+                survey_input_fn <- switch (item$input$type,
+                    int = survey_input_int,
+                    text = survey_input_text
+                )
+
+                tags$li(tags$label(item$text, `for` = paste0('survey_', item$label)), survey_input_fn(item))
+            })
+
+            div(
+                tags$ol(survey_items, id = "survey"),
+                div(actionButton("submit_survey", "Submit", class = "btn-success"),
+                    id = "submit_container")
             )
-
-            tags$li(tags$label(item$text, `for` = item$label), survey_input_fn(item))
-        })
-
-        div(
-            tags$ol(survey_items, id = "survey"),
-            div(actionButton("submit_survey", "Submit answers", class = "btn-success"),
-                id = "submit_container")
-        )
+        } else {
+            p("Thank you. The results of the game will be displayed next.")
+        }
     }
 
     display_results <- function() {
