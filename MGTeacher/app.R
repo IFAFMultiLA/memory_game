@@ -17,11 +17,14 @@ ui <- fluidPage(
     sidebarLayout(
         sidebarPanel(
             uiOutput("sessionsList"),
-            actionButton("createSession", "Create a new session", class = "btn-success")
+            actionButton("createSession", "Create a new session", class = "btn-success", icon = icon("plus"))
         ),
         mainPanel(
             conditionalPanel("input.sessionsSelect",
-                actionButton("deleteSession", "Delete this session", class = "btn-danger", style = "float: right"),
+                div(
+                    downloadButton("downloadSessionData", "Download collected data", class = "btn-info"),
+                    actionButton("deleteSession", "Delete this session", class = "btn-danger", icon = icon("trash")),
+                    style = "float: right"),
                 h1(textOutput("activeSessionTitle")),
                 uiOutput("activeSessionMainInfo"),
                 uiOutput("activeSessionContent")
@@ -63,7 +66,7 @@ server <- function(input, output, session) {
                     bodytext,
                     footer = tagList(
                         modalButton("Cancel"),
-                        actionButton("deleteSessionConfirmed", "OK")
+                        actionButton("deleteSessionConfirmed", "OK", icon = icon("trash"))
                     )
         )
     }
@@ -170,7 +173,7 @@ server <- function(input, output, session) {
         )
 
         adv_sess_btn_args <- list(inputId = "advanceSession", label = next_action_label, class = "btn-success",
-                                  style = "margin: 0 auto 15px auto; display: block")
+                                  icon = icon("forward"), style = "margin: 0 auto 15px auto; display: block")
 
         if (state$sess$stage == "end") {
             adv_sess_btn_args$disabled <- "disabled"
@@ -212,6 +215,20 @@ server <- function(input, output, session) {
             )
         )
     })
+
+    output$downloadSessionData <- downloadHandler(
+        filename = function() {
+            req(state$sess)
+
+            paste0("session_", state$sess$sess_id, ".csv")
+        },
+        content = function(file) {
+            req(state$sess)
+
+            sess_data <- data_for_session(state$sess$sess_id, survey_labels_for_session(state$sess))
+            write.csv(sess_data, file, row.names = FALSE)
+        }
+    )
 }
 
 # Run the application

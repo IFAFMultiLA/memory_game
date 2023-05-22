@@ -2,7 +2,7 @@ library(yaml)
 
 
 SESS_ID_CODE_LENGTH <- 8
-USER_ID_CODE_LENGTH <- 12
+USER_ID_CODE_LENGTH <- 32
 SESS_DIR <- fs::path_abs(here("..", "sessions"))
 stopifnot("the sessions directory must exist" = fs::is_dir(SESS_DIR))
 
@@ -30,3 +30,29 @@ save_sess_config <- function(sess) {
 load_sess_config <- function(sess_id) {
     read_yaml(here(SESS_DIR, sess_id, "session.yaml"))
 }
+
+survey_labels_for_session <- function(sess) {
+    sapply(sess$survey, function(item) {
+        item$label
+    })
+}
+
+data_for_session <- function(sess_id, survey_labels) {
+    user_files <- fs::dir_ls(here(SESS_DIR, sess_id), type = "file", regexp = "user_[A-Za-z0-9]+.rds$")
+    user_data <- lapply(user_files, readRDS)
+    group <- sapply(user_data, function(u) {
+        u$group
+    })
+    n_correct <- sapply(user_data, function(u) {
+        sum(u$user_results)
+    })
+
+    survey_answers <- t(sapply(user_data, function(u) {
+        u$survey_answers
+    }))
+    colnames(survey_answers) <- paste0("survey_", survey_labels)
+
+    sessdata <- data.frame(group = group, n_correct = n_correct, row.names = 1:length(group))
+    cbind(sessdata, survey_answers)
+}
+

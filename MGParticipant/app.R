@@ -11,11 +11,11 @@ user_data_path <- function(sess_id, user_id) {
 }
 
 save_user_data <- function(sess_id, user_id, group, user_data, update = FALSE) {
-    print("saving user data")
-    print(user_data)
+    # print("saving user data")
+    # print(user_data)
 
     if (update) {
-        existing_data <- load_user_data(sess_id, user_id)$user_data
+        existing_data <- load_user_data(sess_id, user_id)
         if (is.null(existing_data)) {
             existing_data <- list()
         }
@@ -23,6 +23,8 @@ save_user_data <- function(sess_id, user_id, group, user_data, update = FALSE) {
         for (k in names(user_data)) {
             existing_data[[k]] <- user_data[[k]]
         }
+
+        existing_data[c('user_id', 'group')] <- NULL
 
         user_data <- existing_data
     }
@@ -33,14 +35,12 @@ save_user_data <- function(sess_id, user_id, group, user_data, update = FALSE) {
 
 load_user_data <- function(sess_id, user_id) {
     file <- user_data_path(sess_id, user_id)
-    print("loading user data")
+    # print("loading user data")
     if (fs::file_exists(file)) {
-        res <- readRDS(file)
+        readRDS(file)
     } else {
-        res <- NULL
+        NULL
     }
-    print(res)
-    res
 }
 
 survey_input_int <- function(item) {
@@ -258,7 +258,7 @@ server <- function(input, output, session) {
         })
 
         if (is.null(state$user_results)) {
-            bottom_elem <- div(actionButton("submit_answers", "Submit", class = "btn-success"),
+            bottom_elem <- div(actionButton("submit_answers", state$sess$messages$submit, class = "btn-success"),
                                id = "submit_container")
         } else {
             n_correct <- sum(state$user_results)
@@ -288,11 +288,11 @@ server <- function(input, output, session) {
 
             div(
                 tags$ol(survey_items, id = "survey"),
-                div(actionButton("submit_survey", "Submit", class = "btn-success"),
+                div(actionButton("submit_survey", state$sess$messages$submit, class = "btn-success"),
                     id = "submit_container")
             )
         } else {
-            p("Thank you. The results of the game will be displayed next.")
+            div(state$sess$messages$survey_ended, class = "alert alert-info", style = "text-align: center")
         }
     }
 
