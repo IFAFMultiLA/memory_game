@@ -6,18 +6,27 @@ source(here('..', 'common.R'))
 
 SESSION_REFRESH_TIME <- 1000   # session refresh timer in milliseconds
 
-save_user_data <- function(sess_id, user_id, user_data) {
-    saveRDS(c(list(user_id = user_id), user_data),
+user_data_path <- function(sess_id, user_id) {
+    here(SESS_DIR, sess_id, paste0("user_", user_id, ".rds"))
+}
+
+save_user_data <- function(sess_id, user_id, group, user_data) {
+    print("saving user data")
+    print(user_data)
+    saveRDS(c(list(user_id = user_id, group = group), user_data),
             here(SESS_DIR, sess_id, paste0("user_", user_id, ".rds")))
 }
 
 load_user_data <- function(sess_id, user_id) {
-    file <- here(SESS_DIR, sess_id, paste0("user_", user_id, ".rds"))
+    file <- user_data_path(sess_id, user_id)
+    print("loading user data")
     if (fs::file_exists(file)) {
-        readRDS(file)
+        res <- readRDS(file)
     } else {
-        NULL
+        res <- NULL
     }
+    print(res)
+    res
 }
 
 
@@ -39,7 +48,8 @@ server <- function(input, output, session) {
         group = NULL,
         sess_id_was_set = FALSE,
         group_was_set = FALSE,
-        user_results = NULL
+        user_results = NULL,
+        user_answers = NULL
     )
 
     observe({
@@ -77,14 +87,17 @@ server <- function(input, output, session) {
                 user_id <- stri_rand_strings(1, USER_ID_CODE_LENGTH)
             }
 
-            # save empty user data just to claim the ID
-            save_user_data(state$sess_id, user_id, list(user_results = NULL))
             isolate(state$user_id <- user_id)
             session$sendCustomMessage("set_user_id", state$user_id);
         } else if (validate_id(input$user_id, USER_ID_CODE_LENGTH)) {
             user_id <- input$user_id
         } else {
             user_id <- NULL
+        }
+
+        # save empty user data just to claim the ID
+        if (!is.null(user_id) && !fs::file_exists(user_data_path(state$sess_id, user_id))) {
+            save_user_data(state$sess_id, user_id, state$group, list(user_results = NULL, user_answers = NULL))
         }
 
         print(paste("setting user ID to", user_id))
@@ -101,14 +114,14 @@ server <- function(input, output, session) {
         req(state$sess)
         req(state$sess$stage == "questions")
         req(state$user_id)
-        req(is.null(state$user_results))
+        req(is.null(state$user_results) && is.null(state$user_answers))
 
         # check answers
         user_answers <- character(length(state$sess$questions))
-        state$user_results <- sapply(1:length(state$sess$questions), function(i) {
+        state$user_results <- sapply(seq_along(state$sess$questions), function(i) {
             solutions <- state$sess$questions[[i]]$a
             user_answer <- trimws(input[[sprintf("answer_%s", i)]])
-            user_answers[i] <- user_answer
+            user_answers[i] <<- user_answer
 
             if (nchar(user_answer) > 0) {
                 regex_solutions <- startsWith(solutions, "^")
@@ -132,10 +145,12 @@ server <- function(input, output, session) {
             }
         })
 
-        save_user_data(state$sess_id, state$user_id,
+        # save user data for this session and user ID
+        state$user_answers <- user_answers
+        save_user_data(state$sess_id, state$user_id, state$group,
             list(
                user_results = state$user_results,
-               user_answers = user_answers
+               user_answers = state$user_answers
             )
         )
     })
@@ -153,14 +168,14 @@ server <- function(input, output, session) {
     display_questions <- function() {
         user_data <- load_user_data(state$sess_id, state$user_id)
         state$user_results <- user_data$user_results
-        user_answers <- user_data$user_answers
+        state$user_answers <- user_data$user_answers
 
-        list_items <- lapply(1:length(state$sess$questions), function(i) {
+        list_items <- lapply(seq_along(state$sess$questions), function(i) {
             item <- state$sess$questions[[i]]
 
             if (!is.null(state$user_results)) {
                 answ <- span(
-                    span(ifelse(is.null(user_answers), input[[sprintf("answer_%s", i)]], user_answers[i]),
+                    span(ifelse(is.null(state$user_answers), input[[sprintf("answer_%s", i)]], state$user_answers[i]),
                          style = "color: #666666"),
                     ifelse(state$user_results[i], "✅",  "❌")
                 )
