@@ -40,7 +40,7 @@ server <- function(input, output, session) {
     )
 
     hasSurvey <- function() {
-        !is.null(state$sess$survey) && length(state$sess$survey) > 0
+        state$sess$config$survey && !is.null(state$sess$survey) && length(state$sess$survey) > 0
     }
 
     updateAvailSessions <- function() {
@@ -203,6 +203,10 @@ server <- function(input, output, session) {
             tags$li(sprintf("%s: %s", item$label, item$text))
         })
 
+        config_list <- lapply(names(state$sess$config), function(k) {
+            tags$li(sprintf("%s: %s", k, state$sess$config[[k]]))
+        })
+
         list(
             tags$h2("Sentences"),
             tags$ol(lapply(state$sess$sentences, tags$li)),
@@ -212,6 +216,8 @@ server <- function(input, output, session) {
                 tags$ol(qa_list),
                 tags$h3("Survey"),
                 tags$ol(survey_list),
+                tags$h3("Configuration"),
+                tags$ul(config_list),
                 id = "session_info_container"
             )
         )

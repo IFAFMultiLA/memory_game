@@ -106,7 +106,7 @@ server <- function(input, output, session) {
     )
 
     hasSurvey <- function() {
-        !is.null(state$sess$survey) && length(state$sess$survey) > 0
+        state$sess$config$survey && !is.null(state$sess$survey) && length(state$sess$survey) > 0
     }
 
     observe({

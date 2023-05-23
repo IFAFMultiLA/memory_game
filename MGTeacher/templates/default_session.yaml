@@ -1,4 +1,6 @@
 language: "en"
+config:
+    survey: true
 sentences:
     - The orange kitten was asleep on the green bench.
     - Business cards are quite expensive to produce.
