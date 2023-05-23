@@ -47,12 +47,21 @@ data_for_session <- function(sess_id, survey_labels) {
         sum(u$user_results)
     })
 
-    survey_answers <- t(sapply(user_data, function(u) {
+    survey_answers <- sapply(user_data, function(u) {
         u$survey_answers
-    }))
+    })
+
+    if (is.vector(survey_answers)) {  # single survey question
+        survey_answers <- t(t(survey_answers))
+    } else {  # multiple survey questions
+        survey_answers <- t(survey_answers)
+    }
+
     colnames(survey_answers) <- paste0("survey_", survey_labels)
 
     sessdata <- data.frame(group = group, n_correct = n_correct, row.names = 1:length(group))
-    cbind(sessdata, survey_answers)
+    res <- cbind(sessdata, survey_answers)
+    res$group <- factor(res$group, c("control", "treatment"))
+    res
 }
 

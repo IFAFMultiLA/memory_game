@@ -109,7 +109,7 @@ server <- function(input, output, session) {
         params <- getQueryString()
         sess_id <- params$sess_id
 
-        if (is.null(sess_id) || !validate_id(sess_id, SESS_ID_CODE_LENGTH)) {
+        if (is.null(sess_id) || !validate_id(sess_id, SESS_ID_CODE_LENGTH, expect_session_dir = TRUE)) {
             showModal(modalDialog("Invalid session ID or session ID not given.", footer = NULL))
         } else {
             state$sess_id <- sess_id
@@ -183,7 +183,8 @@ server <- function(input, output, session) {
 
                 if (sum(regex_solutions) > 0) {
                     # apply regex based solution matching
-                    correct <- correct || any(sapply(solutions[regex_solutions], grepl, user_answer, ignore.case = TRUE))
+                    correct <- correct || any(sapply(solutions[regex_solutions], grepl, user_answer,
+                                                     ignore.case = TRUE))
                 }
 
                 if (sum(!regex_solutions) > 0) {
@@ -246,7 +247,8 @@ server <- function(input, output, session) {
                 answ <- span(
                     span(ifelse(is.null(state$user_answers), input[[sprintf("answer_%s", i)]], state$user_answers[i]),
                          style = "color: #666666"),
-                    ifelse(state$user_results[i], "✅",  "❌")
+                    icon(ifelse(state$user_results[i], "check", "remove"),
+                         style = paste("color:", ifelse(state$user_results[i], "#00AA00", "#AA0000")))
                 )
             } else {
                 answ <- textInput(inputId = sprintf("answer_%s", i), label = NULL)
@@ -298,13 +300,37 @@ server <- function(input, output, session) {
     }
 
     display_results <- function() {
+        # get results
         sess_data <- data_for_session(state$sess_id, survey_labels_for_session(state$sess))
-        summ_data <- group_by(sess_data, group) |>
+
+        # summarize
+        summ_data <- group_by(sess_data, group, .drop = FALSE) |>
             summarise(n = n(),
                       total_correct = sum(n_correct),
-                      mean_correct = mean(n_correct),
-                      sd_correct = sd(n_correct))
-        t(summ_data)
+                      mean_correct = round(mean(n_correct), 2),
+                      sd_correct = round(sd(n_correct), 2))
+
+        # prepare for display
+        msgs <- state$sess$messages
+
+        tbl_data <- t(summ_data)
+        cols <- tbl_data[1, ]
+        col_own_group <- cols == state$group
+        cols[col_own_group] <- sprintf(msgs$own_group, state$group)
+        cols[!col_own_group] <- sprintf(msgs$other_group, cols[!col_own_group])
+        colnames(tbl_data) <- cols
+        tbl_data <- tbl_data[-1, ]
+
+        rownames(tbl_data) <- c(msgs$summary_statistics_count, msgs$summary_statistics_total,
+                                msgs$summary_statistics_mean, msgs$summary_statistics_std)
+
+        list(
+            h1(msgs$summary_statistics),
+            p(sprintf(msgs$group_information, state$group)),
+            renderTable(tbl_data, rownames = TRUE),
+            div(downloadButton("downloadResults", msgs$download_data, class = "btn-info"),
+                style = "text-align: center")
+        )
     }
 
     display_end <- function() {
@@ -325,6 +351,20 @@ server <- function(input, output, session) {
 
         display_fn()
     })
+
+    output$downloadResults <- downloadHandler(
+        filename = function() {
+            req(state$sess$stage == "results")
+
+            "results.csv"
+        },
+        content = function(file) {
+            req(state$sess$stage == "results")
+
+            sess_data <- data_for_session(state$sess_id, survey_labels_for_session(state$sess))
+            write.csv(sess_data, file, row.names = FALSE)
+        }
+    )
 }
 
 # Run the application

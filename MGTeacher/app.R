@@ -173,7 +173,8 @@ server <- function(input, output, session) {
         )
 
         adv_sess_btn_args <- list(inputId = "advanceSession", label = next_action_label, class = "btn-success",
-                                  icon = icon("forward"), style = "margin: 0 auto 15px auto; display: block")
+                                  icon = icon(ifelse(state$sess$stage == "end", "step-forward", "forward")),
+                                  style = "margin: 0 auto 15px auto; display: block")
 
         if (state$sess$stage == "end") {
             adv_sess_btn_args$disabled <- "disabled"

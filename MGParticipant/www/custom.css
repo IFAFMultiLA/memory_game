@@ -3,6 +3,19 @@
     padding: 2em 0 2em 0;
 }
 
+#mainContent h1 {
+    font-size: 1.5em;
+    margin-bottom: 1.5em;
+}
+
+#mainContent p {
+    margin-bottom: 1.5em;
+}
+
+#mainContent .btn {
+    font-size: 1em;
+}
+
 #questions li {
     margin-bottom: 1em;
 }
