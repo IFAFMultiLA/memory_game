@@ -100,6 +100,7 @@ server <- function(input, output, session) {
         group = NULL,
         sess_id_was_set = FALSE,
         group_was_set = FALSE,
+        question_indices = NULL,
         user_results = NULL,
         user_answers = NULL,
         survey_answers = NULL
@@ -207,6 +208,7 @@ server <- function(input, output, session) {
         state$user_answers <- user_answers
         save_user_data(state$sess_id, state$user_id, state$group,
                        list(
+                           question_indices = state$question_indices,
                            user_results = state$user_results,
                            user_answers = state$user_answers
                        )
@@ -243,8 +245,19 @@ server <- function(input, output, session) {
         user_data <- load_user_data(state$sess_id, state$user_id)
         state$user_results <- user_data$user_results
         state$user_answers <- user_data$user_answers
+        state$question_indices <- user_data$question_indices
 
-        list_items <- lapply(seq_along(state$sess$questions), function(i) {
+        isolate({
+            if (is.null(state$question_indices)) {
+                state$question_indices <- seq_along(state$sess$questions)
+
+                if (state$sess$config$randomize_questions) {
+                    state$question_indices <- sample(state$question_indices)
+                }
+            }
+        })
+
+        list_items <- lapply(state$question_indices, function(i) {
             item <- state$sess$questions[[i]]
 
             if (!is.null(state$user_results)) {
