@@ -105,6 +105,10 @@ server <- function(input, output, session) {
         survey_answers = NULL
     )
 
+    hasSurvey <- function() {
+        !is.null(state$sess$survey) && length(state$sess$survey) > 0
+    }
+
     observe({
         params <- getQueryString()
         sess_id <- params$sess_id
@@ -165,7 +169,7 @@ server <- function(input, output, session) {
 
     observeEvent(input$submit_answers, {
         req(state$sess)
-        req(state$sess$stage == "questions")
+        #req(state$sess$stage == "questions")
         req(state$user_id)
         req(is.null(state$user_results) && is.null(state$user_answers))
 
@@ -202,16 +206,16 @@ server <- function(input, output, session) {
         # save user data for this session and user ID
         state$user_answers <- user_answers
         save_user_data(state$sess_id, state$user_id, state$group,
-            list(
-               user_results = state$user_results,
-               user_answers = state$user_answers
-            )
+                       list(
+                           user_results = state$user_results,
+                           user_answers = state$user_answers
+                       )
         )
     })
 
     observeEvent(input$submit_survey, {
         req(state$sess)
-        req(state$sess$stage == "survey")
+        #req(state$sess$stage == "survey")
         req(state$user_id)
         req(is.null(state$survey_answers))
 
@@ -340,6 +344,16 @@ server <- function(input, output, session) {
     output$mainContent <- renderUI({
         req(state$sess)
 
+        post_questions_stage <- ifelse(hasSurvey(), "survey", "results")
+
+        if (state$sess$stage == post_questions_stage && is.null(state$user_results)) {
+            session$sendCustomMessage("autosubmit", "submit_answers")
+        }
+
+        if (hasSurvey() && state$sess$stage == "results" && is.null(state$survey_answers)) {
+            session$sendCustomMessage("autosubmit", "submit_survey")
+        }
+
         display_fn <- switch (state$sess$stage,
             start = display_start,
             directions = display_directions,
@@ -355,7 +369,6 @@ server <- function(input, output, session) {
     output$downloadResults <- downloadHandler(
         filename = function() {
             req(state$sess$stage == "results")
-
             "results.csv"
         },
         content = function(file) {
