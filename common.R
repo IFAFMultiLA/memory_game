@@ -51,6 +51,11 @@ data_for_session <- function(sess_id, survey_labels) {
     # filter user data: take only participants that have submitted answers
     user_data <- user_data[!sapply(user_data, is.null)]
 
+    if (length(user_data) == 0) {
+        return(data.frame(group = factor(levels = c("control", "treatment")),
+                          n_correct = integer()))
+    }
+
     group <- sapply(user_data, function(u) {
         u$group
     })
@@ -59,7 +64,7 @@ data_for_session <- function(sess_id, survey_labels) {
     })
 
     survey_answers <- sapply(user_data, function(u) {
-        u$survey_answers
+        ifelse(is.null(u$survey_answers), rep(NA, length(survey_labels)), u$survey_answers)
     })
 
     if (is.vector(survey_answers)) {  # single survey question

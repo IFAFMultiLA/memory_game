@@ -49,4 +49,10 @@ $(document).on("shiny:connected", function() {
         assignments[sess_id] = group;
         Cookies.set("assignments", btoa(JSON.stringify(assignments)));
     });
+
+    Shiny.addCustomMessageHandler("autosubmit", function(btn_id) {
+        console.log("autosubmit", btn_id);
+
+        $("#" + btn_id).click();
+    });
 });
