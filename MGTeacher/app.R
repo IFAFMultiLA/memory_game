@@ -8,7 +8,8 @@ source(here('..', 'common.R'))
 TEMPLATES_DIR <- here("templates")
 stopifnot("the templates directory must exist" = fs::is_dir(TEMPLATES_DIR))
 
-DEFAULT_SESSION <- read_yaml(here(TEMPLATES_DIR, "default_session.yaml"))
+
+available_sessions_templates <- fs::path_file(fs::dir_ls(here(TEMPLATES_DIR), type = "file", glob = "*.yaml"))
 
 
 ui <- fluidPage(
@@ -18,7 +19,9 @@ ui <- fluidPage(
     sidebarLayout(
         sidebarPanel(
             uiOutput("sessionsList"),
-            actionButton("createSession", "Create a new session", class = "btn-success", icon = icon("plus"))
+            selectInput("createSessionTemplate", "Create a new session from template:", available_sessions_templates,
+                        selected = "default_session_en.yaml"),
+            actionButton("createSession", "", class = "btn-success", icon = icon("plus"))
         ),
         mainPanel(
             conditionalPanel("input.sessionsSelect",
@@ -78,6 +81,10 @@ server <- function(input, output, session) {
     }
 
     observeEvent(input$createSession, {
+        req(input$createSessionTemplate)
+        req(endsWith(input$createSessionTemplate, ".yaml"))
+        req(grepl("^[A-Za-z0-9_-]+$", substring(input$createSessionTemplate, 1, nchar(input$createSessionTemplate)-5)))
+
         sess_id <- NULL
         while (is.null(sess_id) || fs::dir_exists(here(SESS_DIR, sess_id))) {
             sess_id <- stri_rand_strings(1, SESS_ID_CODE_LENGTH)
@@ -85,6 +92,8 @@ server <- function(input, output, session) {
 
         fs::dir_create(here(SESS_DIR, sess_id))
         now <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S")
+
+        sess_template_data <- read_yaml(here(TEMPLATES_DIR, input$createSessionTemplate))
 
         state$sess <- c(
             list(
@@ -100,7 +109,7 @@ server <- function(input, output, session) {
                     end = NULL
                 )
             ),
-            DEFAULT_SESSION
+            sess_template_data
         )
 
         save_sess_config(state$sess)
@@ -157,7 +166,7 @@ server <- function(input, output, session) {
     output$sessionsList <- renderUI({
         updateAvailSessions()
 
-        selectInput("sessionsSelect", "Load session:", state$available_sessions, selected = state$sess$sess_id)
+        selectInput("sessionsSelect", "Load existing session:", state$available_sessions, selected = state$sess$sess_id)
     })
 
     output$activeSessionTitle <- renderText({
