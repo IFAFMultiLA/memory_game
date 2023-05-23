@@ -39,7 +39,18 @@ survey_labels_for_session <- function(sess) {
 
 data_for_session <- function(sess_id, survey_labels) {
     user_files <- fs::dir_ls(here(SESS_DIR, sess_id), type = "file", regexp = "user_[A-Za-z0-9]+.rds$")
-    user_data <- lapply(user_files, readRDS)
+    user_data <- lapply(user_files, function(f) {
+        u <- readRDS(f)
+        if (is.null(u$user_results) || is.null(u$user_answers)) {
+            NULL
+        } else {
+            u
+        }
+    })
+
+    # filter user data: take only participants that have submitted answers
+    user_data <- user_data[!sapply(user_data, is.null)]
+
     group <- sapply(user_data, function(u) {
         u$group
     })
