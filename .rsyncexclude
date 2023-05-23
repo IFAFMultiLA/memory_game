@@ -1,0 +1,12 @@
+.git*
+**/renv/library/
+**/renv/sandbox/
+**/renv/staging/
+.Rhistory
+.Rproj.user/
+*.Rproj
+.rsyncexclude
+Makefile
+*.swp
+sessions/
+MGTeacher/.Renviron
