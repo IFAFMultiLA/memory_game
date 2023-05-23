@@ -1,6 +1,3 @@
-library(yaml)
-
-
 SESS_ID_CODE_LENGTH <- 8
 USER_ID_CODE_LENGTH <- 32
 SESS_DIR <- fs::path_abs(here("..", "sessions"))
