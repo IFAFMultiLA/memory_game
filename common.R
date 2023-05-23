@@ -47,6 +47,10 @@ data_for_session <- function(sess_id, survey_labels) {
             u
         }
     })
+
+    # filter user data: take only participants that have submitted answers
+    user_data <- user_data[!sapply(user_data, is.null)]
+
     group <- sapply(user_data, function(u) {
         u$group
     })
