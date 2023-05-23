@@ -1,6 +1,7 @@
 library(shiny)
 library(here)
 library(stringi)
+library(qrcode)
 
 source(here('..', 'common.R'))
 
@@ -27,6 +28,7 @@ ui <- fluidPage(
                     style = "float: right"),
                 h1(textOutput("activeSessionTitle")),
                 uiOutput("activeSessionMainInfo"),
+                plotOutput("activeSessionQRCode"),
                 uiOutput("activeSessionContent")
             )
         )
@@ -41,6 +43,10 @@ server <- function(input, output, session) {
 
     hasSurvey <- function() {
         state$sess$config$survey && !is.null(state$sess$survey) && length(state$sess$survey) > 0
+    }
+
+    appURL <- function() {
+        paste0(Sys.getenv("PARTICIPANT_APP_BASEURL"), "?sess_id=", state$sess$sess_id)
     }
 
     updateAvailSessions <- function() {
@@ -180,6 +186,21 @@ server <- function(input, output, session) {
             adv_sess_btn_args$disabled <- "disabled"
         }
 
+        base_app_url <- Sys.getenv("PARTICIPANT_APP_BASEURL")
+
+        if (base_app_url == "") {
+            participant_app_url <- div(
+                p("environment variable ", tags$code("PARTICIPANT_APP_BASEURL"), " not set – can't show
+                   participant app URL or generate QR code"),
+                class = "alert alert-danger"
+            )
+        } else {
+            participant_app_url <- div(
+                p("Share this URL or use the QR code below: ", tags$code(appURL())),
+                class = "alert alert-info"
+            )
+        }
+
         div(
             div(p("Current stage: ", span(state$sess$stage, id = "current_stage")),
                 class = "alert alert-info", style = "text-align: center"),
@@ -188,8 +209,15 @@ server <- function(input, output, session) {
                 p("Time elapsed in current game stage:", id = "stage_timer_intro"),
                 p("", id = "stage_timer", style = "text-align: center; font-weight: bold"),
                 p(sprintf("Creation date: %s | Language: %s", state$sess$date, state$sess$language)),
-                class = "alert alert-warning")
+                class = "alert alert-warning"),
+            participant_app_url
         )
+    })
+
+    output$activeSessionQRCode <- renderPlot({
+        req(Sys.getenv("PARTICIPANT_APP_BASEURL"))
+
+        plot(qr_code(appURL()))
     })
 
     output$activeSessionContent <- renderUI({
