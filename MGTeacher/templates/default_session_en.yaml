@@ -8,6 +8,26 @@ sentences:
     - In the park there were two ducks.
     - The brown truck crashed into the mailbox.
     - Five shirts hung from the exercise bicycle in the basement.
+    - She mailed him a birthday card, but she forgot to put a stamp on the envelope.
+    - The dead body of the sheep was full of maggots.
+    - It is 6 o’clock in Korea.
+    - Easter is Rebecca’s favorite holiday
+    - The deck of cards had five nines in it.
+    - Gary prefers shrimp to steak.
+    - 10 of my tulip bulbs flowered, but the deer ate 8 of them
+    - The upstairs toilet is clogged up again
+    - His television set did not receive channel 7
+    - At church last week, I got a splinter from the pew.
+    - 4 hikers were lost in the blizzard.  They are presumed dead.
+    - The web sites Brad was surfing at school contained pornographic images.
+    - After shooting 3 arrows, Benjamin hit the bull’s-eye of the target.
+    - The chocolate candy has walnuts and peanuts in it.
+    - Gary wore a plaid flannel shirt to the store.
+    - Two planes collided on the runway in the Canary Islands.
+    - The storm clouds overhead seem to be drifting Southwest.
+    - Yellow candle wax got all over the kitchen counter.
+    - The evil super villain threatened to release death spores in the city’s water supply
+    - Michele’s foot was bleeding because she cut it on a piece of sharp coral.
 messages:
     not_started: "Please wait. The game hasn't started yet."
     directions_control: |
@@ -41,11 +61,49 @@ questions:
     - q: How many hikers were lost in the blizzard?
       a: [four, "4"]
     - q: Where were the two ducks?
-      a: "^.*park.*$"
+      a: "\\bpark\\b"
+      regex: true
     - q: How many arrows did Benjamin shoot before hitting the bullseye?
       a: [three, "3"]
     - q: Where did Gary wear a plaid flannel shirt?
-      a: "^.*store.*$"
+      a: "\\bstore\\b"
+      regex: true
+    - q: What color was the bench on which the orange kitten slept on?
+      a: green
+    - q: The stamp was omitted from an envelope containing what?
+      a: ["birthday card", "a birthday card"]
+    - q: How many tulips remain?
+      a: [two, "2"]
+    - q: What direction are the storm clouds drifting?
+      a: "\\bsouthwest\\b"
+      regex: true
+    - q: What did the chocolate candy have in it besides peanuts?
+      a: walnuts
+    - q: Where is it 6 o’clock?
+      a: korea
+    - q: What toilet is clogged up again?
+      a: "\\b(upper|upstairs)\\b"
+      regex: true
+    - q: What color was the candle wax that got all over the kitchen counter?
+      a: yellow
+    - q: In what part of the house were the five shirts hanging?
+      a: "\\bbasement\\b"
+      regex: true
+    - q: What card were there five of in the deck?
+      a: ["nines", "9s"]
+    - q: Who was surfing porn on the internet at school?
+      a: "brad"
+    - q: Where did two planes collide on the runway?
+      a: "\\b(canary|canaries)\\b"
+      regex: true
+    - q: What is quite expensive to produce?
+      a: "business cards"
+    - q: Whose favorite holiday is Easter?
+      a: "^rebecca('?s)?$"
+      regex: true
+    - q: The dead body of what animal was full of maggots?
+      a: "\\bsheep\\b"
+      regex: true
 survey:
     - label: age
       text: What is your age?
