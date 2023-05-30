@@ -29,9 +29,13 @@ load_sess_config <- function(sess_id) {
 }
 
 survey_labels_for_session <- function(sess) {
-    sapply(sess$survey, function(item) {
-        item$label
-    })
+    if (sess$config$survey) {
+        sapply(sess$survey, function(item) {
+            item$label
+        })
+    } else {
+        NULL
+    }
 }
 
 data_for_session <- function(sess_id, survey_labels) {
@@ -60,20 +64,24 @@ data_for_session <- function(sess_id, survey_labels) {
         sum(u$user_results)
     })
 
-    survey_answers <- sapply(user_data, function(u) {
-        ifelse(is.null(u$survey_answers), rep(NA, length(survey_labels)), u$survey_answers)
-    })
+    res <- data.frame(group = group, n_correct = n_correct, row.names = 1:length(group))
 
-    if (is.vector(survey_answers)) {  # single survey question
-        survey_answers <- t(t(survey_answers))
-    } else {  # multiple survey questions
-        survey_answers <- t(survey_answers)
+    if (!is.null(survey_labels)) {
+        survey_answers <- sapply(user_data, function(u) {
+            ifelse(is.null(u$survey_answers), rep(NA, length(survey_labels)), u$survey_answers)
+        })
+
+        if (is.vector(survey_answers)) {  # single survey question
+            survey_answers <- t(t(survey_answers))
+        } else {  # multiple survey questions
+            survey_answers <- t(survey_answers)
+        }
+
+        colnames(survey_answers) <- paste0("survey_", survey_labels)
+
+        res <- cbind(res, survey_answers)
     }
 
-    colnames(survey_answers) <- paste0("survey_", survey_labels)
-
-    sessdata <- data.frame(group = group, n_correct = n_correct, row.names = 1:length(group))
-    res <- cbind(sessdata, survey_answers)
     res$group <- factor(res$group, c("control", "treatment"))
     res
 }

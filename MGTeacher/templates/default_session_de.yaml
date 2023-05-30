@@ -1,27 +1,51 @@
 language: "de"
 config:
-    survey: true
-    randomize_questions: true
+    survey: false
+    randomize_questions: false
 sentences:
-    - Nur ein Test auf Deutsch.
+    - Das orangefarbene Kätzchen schlief auf der grünen Bank.
+    - Visitenkarten sind ziemlich teuer in der Herstellung.
+    - Im Park gab es zwei Enten.
+    - Der braune Lastwagen ist gegen den Briefkasten gefahren.
+    - Fünf Hemden hingen an dem Heimtrainer im Keller.
+    - Sie schickte ihm eine Geburtstagskarte, aber sie vergaß, eine Briefmarke auf den Umschlag zu kleben.
+    - Der tote Körper des Schafes war voller Maden.
+    - Es ist 6 Uhr in Korea.
+    - Ostern ist Rebeccas Lieblingsfest.
+    - In dem Kartenspiel waren fünf Neunen.
+    - (Gary mag lieber Krabben als Steak.)
+    - 10 meiner Tulpenzwiebeln haben geblüht, aber die Rehe haben 8 von ihnen gefressen.
+    - Die Toilette im Obergeschoss ist wieder verstopft
+    - (Sein Fernsehgerät empfängt den Kanal 7 nicht)
+    - (Letzte Woche habe ich mir in der Kirche einen Splitter von der Kirchenbank geholt.)
+    - 4 Wanderer sind in dem Schneesturm verschollen.  Man nimmt an, dass sie tot sind.
+    - Die Websites, auf denen Brad in der Schule surfte, enthielten pornografische Bilder.
+    - Nachdem er 3 Pfeile geschossen hatte, traf Benjamin ins Schwarze der Zielscheibe.
+    - In der Schokolade sind Walnüsse und Erdnüsse enthalten.
+    - Gary hat ein kariertes Flanellhemd im Laden getragen.
+    - Auf den Kanarischen Inseln sind zwei Flugzeuge auf der Landebahn zusammengestoßen.
+    - Die Gewitterwolken am Himmel ziehen über die Stadt.
+    - Gelbes Kerzenwachs hat sich auf dem Küchentisch verteilt.
+    - (Der böse Superschurke drohte, Todessporen in die Wasserversorgung der Stadt zu leiten.)
+    - (Micheles Fuß blutete, weil sie sich an einem Stück scharfer Koralle geschnitten hatte.)
 messages:
-    not_started: "Please wait. The game hasn't started yet."
+    not_started: "Bitte warten Sie. Das Spiel hat noch nicht begonnen."
     directions_control: |
-        <p>Over the next few minutes, we will test your memory.  This is NOT an IQ test.   When the game is over, you will have an opportunity to compare your memory with others in the room, however, it is not a competition among individual students.</p>
-
-        <p>The teacher will read the class a list of statements.   You may not write anything down and you may not talk or communicate with anyone.  After the list of statements is complete, everyone in the class will silently attempt to answer a series of questions regarding the statements you just heard.  Answers will be marked either right or wrong, and your answer sheet will be anonymous.</p>
-
-        <p>You will be handed the list of questions as soon as the teacher finishes reading the statements.  For the next few minutes, your task is to <strong>LISTEN</strong> quietly and <strong>TRY NOT TO FORGET</strong> what you hear.</p>
+        <ul>
+          <li>Dieser Quiz ist anonym</li>
+          <li>Machen Sie keine Notizen, sprechen Sie nicht</li>
+          <li>Versuchen Sie sich jeden einzelnen Satz, der vorgelesen wird, einzuprägen. Wenn z.B. &apos; Das rote Motorrad steht vor dem gelben Haus. &apos; gesagt wird, merken Sie sich das, um die Fragen korrekt zu beantworten.</li>
+        </ul>
     directions_treatment: |
-        <p>Over the next few minutes, we will test your memory.  This is NOT an IQ test.   When the game is over, you will have an opportunity to compare your memory with others in the room, however, it is not a competition among individual students.</p>
-
-        <p>The teacher will read the class a list of statements.   You may not write anything down and you may not talk or communicate with anyone.  After the list of statements is complete, everyone in the class will silently attempt to answer a series of questions regarding the statements you just heard.  Answers will be marked either right or wrong, and your answer sheet will be anonymous.</p>
-
-        <p>You will be handed the list of questions as soon as the teacher finishes reading the statements.  For the next few minutes, your task is to <strong>LISTEN</strong> quietly.   The <strong>BEST TECHNIQUE</strong> for short term memory recall is to <strong>VISUALIZE</strong> whatever you hear.  For example, if the teacher says “the red motorcycle was in the barn,” you might picture a red motorcycle in a barn.  <strong>ATTEMPT TO VISUALIZE IN YOUR MIND</strong> all of the statements the teacher reads!</p>
-    results_summary: You had %d correct answers.
-    end: The game has ended.
-    submit: Submit
-    survey_ended: Thank you. The results of the game will be displayed next.
+        <ul>
+          <li>Dieser Quiz ist anonym</li>
+          <li>Machen Sie keine Notizen, sprechen Sie nicht</li>
+          <li>Die beste Methode, sich die vorgelesenen Sätze zu merken, ist diese zu visualisieren. Wenn z.B. &apos; rotes Motorrad vor gelbem Haus &apos; gesagt wird, stellen sie sich bildlich vor, wie ein rotes Motorrad vor einem gelben Haus steht. Visualisieren Sie jeden der vorgelesenen Sätze!
+        </ul>
+    results_summary: Sie hatten %d richtige Antworten.
+    end: Das Spiel ist beendet.
+    submit: Abschicken
+    survey_ended: Vielen Dank!
     group_information: You were in the %s group.
     summary_statistics: Summary statistics
     own_group:  Your group (%s)
@@ -32,19 +56,50 @@ messages:
     summary_statistics_std: Standard deviation for the mean
     download_data: Download collected data
 questions:
-    - q: What color was the truck that crashed into the mailbox?
-      a: brown
-    - q: How many hikers were lost in the blizzard?
-      a: [four, "4"]
-    - q: Where were the two ducks?
+    - q: Welche Farbe hatte der Lastwagen, der in den Briefkasten krachte?
+      a: braun
+    - q: Wie viele Wanderer gingen in dem Schneesturm verloren?
+      a: [vier, "4"]
+    - q: Wo waren die beiden Enten?
       a: "^.*park.*$"
-    - q: How many arrows did Benjamin shoot before hitting the bullseye?
-      a: [three, "3"]
-    - q: Where did Gary wear a plaid flannel shirt?
-      a: "^.*store.*$"
+    - q: Wie viele Pfeile hat Benjamin geschossen, bevor er ins Schwarze getroffen hat?
+      a: [drei, "3"]
+    - q: Wo hat Gary ein kariertes Flanellhemd getragen?
+      a: "^.*laden.*$"
+    - q: Welche Farbe hatte die Bank, auf der das orangefarbene Kätzchen schlief?
+      a: grün
+    - q: Was war der Inhalt des Umschlages, auf den keine Briefmarke geklebt wurde?
+      a: Geburtstagskarte
+    - q: Wie viele Tulpen gibt es noch?
+      a: [zwei, "2"]
+    - q: Über was treiben die Gewitterwolken?
+      a: "^.*stadt.*$"
+    - q: Was war außer Erdnüssen noch in der Schokolade?
+      a: Walnüsse
+    - q: Wo ist es 6 Uhr?
+      a: "^.*korea.*$"
+    - q: Welche Toilette ist schon wieder verstopft?
+      a: "^.*ober.*$"
+    - q: Welche Farbe hatte das Kerzenwachs, das sich auf dem Küchentisch verteilt hat?
+      a: gelb
+    - q: In welchem Teil des Hauses hingen die fünf Hemden?
+      a: "^.*keller.*$"
+    - q: Von welcher Karte gab es fünf Stück in dem Stapel?
+      a: [neun,"9"]
+    - q: Was war auf den Webseiten, die Brad in der Schule angesehen hat?
+      a: "^.*porn.*$"
+    - q: Wo sind zwei Flugzeuge auf der Landebahn zusammengestoßen?
+      a: "^.*(k|c)anar.*$"
+    - q: Was ist sehr teuer in der Herstellung?
+      a: "^.*visitenkarten.*$"
+    - q: Was ist Rebeccas Lieblingsfest?
+      a: ostern
+    - q: Der tote Körper welchen Tieres war voll von Maden?
+      a: "^.*schaf.*$"
+
 survey:
     - label: age
-      text: What is your age?
+      text: Wie alt sind Sie?
       input:
             required: true
             type: int
