@@ -61,11 +61,13 @@ questions:
     - q: Wie viele Wanderer gingen in dem Schneesturm verloren?
       a: [vier, "4"]
     - q: Wo waren die beiden Enten?
-      a: "^.*park.*$"
+      a: "\\bpark\\b"
+      regex: true
     - q: Wie viele Pfeile hat Benjamin geschossen, bevor er ins Schwarze getroffen hat?
       a: [drei, "3"]
     - q: Wo hat Gary ein kariertes Flanellhemd getragen?
-      a: "^.*laden.*$"
+      a: "\\bladen\\b"
+      regex: true
     - q: Welche Farbe hatte die Bank, auf der das orangefarbene Kätzchen schlief?
       a: grün
     - q: Was war der Inhalt des Umschlages, auf den keine Briefmarke geklebt wurde?
@@ -73,29 +75,37 @@ questions:
     - q: Wie viele Tulpen gibt es noch?
       a: [zwei, "2"]
     - q: Über was treiben die Gewitterwolken?
-      a: "^.*stadt.*$"
+      a: "\\bstadt\\b"
+      regex: true
     - q: Was war außer Erdnüssen noch in der Schokolade?
       a: Walnüsse
     - q: Wo ist es 6 Uhr?
-      a: "^.*korea.*$"
+      a: "\\bkorea\\b"
+      regex: true
     - q: Welche Toilette ist schon wieder verstopft?
-      a: "^.*ober.*$"
+      a: "\\bober\\b"
+      regex: true
     - q: Welche Farbe hatte das Kerzenwachs, das sich auf dem Küchentisch verteilt hat?
       a: gelb
     - q: In welchem Teil des Hauses hingen die fünf Hemden?
-      a: "^.*keller.*$"
+      a: "\\bkeller\\b"
+      regex: true
     - q: Von welcher Karte gab es fünf Stück in dem Stapel?
       a: [neun,"9"]
     - q: Was war auf den Webseiten, die Brad in der Schule angesehen hat?
-      a: "^.*porn.*$"
+      a: "\\bporn\\b"
+      regex: true
     - q: Wo sind zwei Flugzeuge auf der Landebahn zusammengestoßen?
-      a: "^.*(k|c)anar.*$"
+      a: "\\b(k|c)anar\\b"
+      regex: true
     - q: Was ist sehr teuer in der Herstellung?
-      a: "^.*visitenkarten.*$"
+      a: "\\bvisitenkarten\\b"
+      regex: true
     - q: Was ist Rebeccas Lieblingsfest?
       a: ostern
     - q: Der tote Körper welchen Tieres war voll von Maden?
-      a: "^.*schaf.*$"
+      a: "\\bschaf\\b"
+      regex: true
 
 survey:
     - label: age

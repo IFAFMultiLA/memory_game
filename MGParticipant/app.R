@@ -179,23 +179,19 @@ server <- function(input, output, session) {
         user_answers <- character(length(state$sess$questions))
         state$user_results <- sapply(seq_along(state$sess$questions), function(i) {
             solutions <- state$sess$questions[[i]]$a
+            is_regex <- !is.null(state$sess$questions[[i]]$regex) && state$sess$questions[[i]]$regex
             user_answer <- trimws(input[[sprintf("answer_%s", i)]])
             user_answers[i] <<- user_answer
 
             if (nchar(user_answer) > 0) {
-                regex_solutions <- startsWith(solutions, "^")
-
                 correct <- FALSE
 
-                if (sum(regex_solutions) > 0) {
+                if (is_regex) {
                     # apply regex based solution matching
-                    correct <- correct || any(sapply(solutions[regex_solutions], grepl, user_answer,
-                                                     ignore.case = TRUE))
-                }
-
-                if (sum(!regex_solutions) > 0) {
+                    correct <- correct || any(sapply(solutions, grepl, user_answer, ignore.case = TRUE))
+                } else {
                     # apply non-regex based solution matching
-                    correct <- correct || any(tolower(user_answer) == tolower(solutions[!regex_solutions]))
+                    correct <- correct || any(tolower(user_answer) == tolower(solutions))
                 }
 
                 correct
