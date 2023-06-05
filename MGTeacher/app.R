@@ -14,6 +14,7 @@ available_sessions_templates <- fs::path_file(fs::dir_ls(here(TEMPLATES_DIR), ty
 
 
 ui <- fluidPage(
+    shinyjs::useShinyjs(),
     tags$script(src = "custom.js"),    # custom JS
     titlePanel("Shrager Memory Game: Teacher App"),
 
@@ -33,7 +34,8 @@ ui <- fluidPage(
                 h1(textOutput("activeSessionTitle")),
                 uiOutput("activeSessionMainInfo"),
                 plotOutput("activeSessionQRCode"),
-                uiOutput("activeSessionContent")
+                actionButton("toggleSessContentDisplay", "Toggle session information display", icon = icon("cog")),
+                shinyjs::hidden(uiOutput("activeSessionContent"))
             )
         )
     )
@@ -162,6 +164,12 @@ server <- function(input, output, session) {
             save_sess_config(state$sess)
             session$sendCustomMessage("session_advanced", state$sess$stage)
         }
+    })
+
+    observeEvent(input$toggleSessContentDisplay, {
+        req(state$sess)
+
+        shinyjs::toggle("activeSessionContent")
     })
 
     output$sessionsList <- renderUI({
