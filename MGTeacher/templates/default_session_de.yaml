@@ -83,20 +83,20 @@ questions:
       a: "\\bkorea\\b"
       regex: true
     - q: Welche Toilette ist schon wieder verstopft?
-      a: "\\bober\\b"
+      a: "\\bober\\w*\\b"
       regex: true
     - q: Welche Farbe hatte das Kerzenwachs, das sich auf dem Küchentisch verteilt hat?
       a: gelb
     - q: In welchem Teil des Hauses hingen die fünf Hemden?
-      a: "\\bkeller\\b"
+      a: "\\bkeller\\w*\\b"
       regex: true
     - q: Von welcher Karte gab es fünf Stück in dem Stapel?
       a: [neun,"9"]
     - q: Was war auf den Webseiten, die Brad in der Schule angesehen hat?
-      a: "\\bporn\\b"
+      a: "\\bporn\\w*\\b"
       regex: true
     - q: Wo sind zwei Flugzeuge auf der Landebahn zusammengestoßen?
-      a: "\\b(k|c)anar\\b"
+      a: "\\b(k|c)anar\\w*\\b"
       regex: true
     - q: Was ist sehr teuer in der Herstellung?
       a: "\\bvisitenkarten\\b"
