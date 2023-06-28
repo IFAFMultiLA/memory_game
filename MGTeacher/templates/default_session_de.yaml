@@ -104,7 +104,8 @@ questions:
       a: "\\bvisitenkarten*\\b"
       regex: true
     - q: Was ist Rebeccas Lieblingsfest?
-      a: ostern
+      a: "\\boster\\w*\\b"
+      regex: true
     - q: Der tote Körper welchen Tieres war voll von Maden?
       a: "\\bschafs*\\b"
       regex: true
