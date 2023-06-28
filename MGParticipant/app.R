@@ -128,7 +128,7 @@ server <- function(input, output, session) {
             }
 
             if (state$group_was_set && state$group == "unassigned") {
-                isolate(state$group <- sample(c("control", "treatment"), size = 1))
+                isolate(state$group <- sample(GROUPS, size = 1))
                 print(sprintf("random assignment to %s", state$group))
                 session$sendCustomMessage("set_group", state$group);
             }

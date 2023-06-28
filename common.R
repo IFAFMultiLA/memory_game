@@ -4,6 +4,7 @@ SESS_DIR <- fs::path_abs(here("..", "sessions"))
 stopifnot("the sessions directory must exist" = fs::is_dir(SESS_DIR))
 
 STAGES <- c("start", "directions", "questions", "survey", "results", "end")
+GROUPS <- c("ctrl", "treat")
 
 
 validate_id <- function(id, expected_length, expect_session_dir = FALSE) {
@@ -53,7 +54,7 @@ data_for_session <- function(sess_id, survey_labels) {
     user_data <- user_data[!sapply(user_data, is.null)]
 
     if (length(user_data) == 0) {
-        return(data.frame(group = factor(levels = c("control", "treatment")),
+        return(data.frame(group = factor(levels = GROUPS),
                           n_correct = integer()))
     }
 
@@ -82,7 +83,7 @@ data_for_session <- function(sess_id, survey_labels) {
         res <- cbind(res, survey_answers)
     }
 
-    res$group <- factor(res$group, c("control", "treatment"))
+    res$group <- factor(res$group, GROUPS)
     res
 }
 
