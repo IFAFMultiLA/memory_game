@@ -87,3 +87,24 @@ data_for_session <- function(sess_id, survey_labels) {
     res
 }
 
+check_answer <- function(questiondef, user_answer) {
+    solutions <- questiondef$a
+    is_regex <- !is.null(questiondef$regex) && questiondef$regex
+
+    if (nchar(user_answer) > 0) {
+        correct <- FALSE
+
+        if (is_regex) {
+            # apply regex based solution matching
+            correct <- correct || any(sapply(solutions, grepl, user_answer, ignore.case = TRUE))
+        } else {
+            # apply non-regex based solution matching
+            correct <- correct || any(tolower(user_answer) == tolower(solutions))
+        }
+
+        correct
+    } else {
+        # empty answers are always wrong
+        FALSE
+    }
+}

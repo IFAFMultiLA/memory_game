@@ -46,15 +46,15 @@ messages:
     end: Das Spiel ist beendet.
     submit: Abschicken
     survey_ended: Vielen Dank!
-    group_information: You were in the %s group.
-    summary_statistics: Summary statistics
-    own_group:  Your group (%s)
-    other_group: Other group (%s)
-    summary_statistics_count: Number of participants
-    summary_statistics_total: Total number of correct answers
-    summary_statistics_mean: Mean number of correct answers
-    summary_statistics_std: Standard deviation for the mean
-    download_data: Download collected data
+    group_information: Sie waren in der Gruppe "%s".
+    summary_statistics: Zusammenfassende Statistiken
+    own_group:  Ihre Gruppe (%s)
+    other_group: Die andere Gruppe (%s)
+    summary_statistics_count: Anzahl der Teilnehmenden
+    summary_statistics_total: Gesamtzahl an korrekten Antworten
+    summary_statistics_mean: Durchschn. Anzahl an korrekten Antworten
+    summary_statistics_std: Standardabweichung
+    download_data: Herunterladen der gesammelten Daten
 questions:
     - q: Welche Farbe hatte der Lastwagen, der in den Briefkasten krachte?
       a: braun
@@ -71,19 +71,20 @@ questions:
     - q: Welche Farbe hatte die Bank, auf der das orangefarbene Kätzchen schlief?
       a: grün
     - q: Was war der Inhalt des Umschlages, auf den keine Briefmarke geklebt wurde?
-      a: Geburtstagskarte
+      a: "\\bgeburtstag\\w*\\b"
+      regex: true
     - q: Wie viele Tulpen gibt es noch?
       a: [zwei, "2"]
     - q: Über was treiben die Gewitterwolken?
       a: "\\bstadt\\b"
       regex: true
     - q: Was war außer Erdnüssen noch in der Schokolade?
-      a: Walnüsse
+      a: walnüsse
     - q: Wo ist es 6 Uhr?
       a: "\\bkorea\\b"
       regex: true
     - q: Welche Toilette ist schon wieder verstopft?
-      a: "\\bober\\w*\\b"
+      a: "\\bobe(r|n)\\w*\\b"
       regex: true
     - q: Welche Farbe hatte das Kerzenwachs, das sich auf dem Küchentisch verteilt hat?
       a: gelb
@@ -91,7 +92,8 @@ questions:
       a: "\\bkeller\\w*\\b"
       regex: true
     - q: Von welcher Karte gab es fünf Stück in dem Stapel?
-      a: [neun,"9"]
+      a: "\\b(neun|9)\\w*\\b"
+      regex: true
     - q: Was war auf den Webseiten, die Brad in der Schule angesehen hat?
       a: "\\bporn\\w*\\b"
       regex: true
@@ -99,12 +101,13 @@ questions:
       a: "\\b(k|c)anar\\w*\\b"
       regex: true
     - q: Was ist sehr teuer in der Herstellung?
-      a: "\\bvisitenkarten\\b"
+      a: "\\bvisitenkarten*\\b"
       regex: true
     - q: Was ist Rebeccas Lieblingsfest?
-      a: ostern
+      a: "\\boster\\w*\\b"
+      regex: true
     - q: Der tote Körper welchen Tieres war voll von Maden?
-      a: "\\bschaf\\b"
+      a: "\\bschafs*\\b"
       regex: true
 
 survey:
