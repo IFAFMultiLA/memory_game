@@ -46,7 +46,7 @@ messages:
     end: The game has ended.
     submit: Submit
     survey_ended: Thank you. The results of the game will be displayed next.
-    group_information: You were in the %s group.
+    group_information: You were in the "%s" group.
     summary_statistics: Summary statistics
     own_group:  Your group (%s)
     other_group: Other group (%s)
