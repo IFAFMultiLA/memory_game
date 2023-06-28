@@ -30,13 +30,13 @@ sentences:
     - Michele’s foot was bleeding because she cut it on a piece of sharp coral.
 messages:
     not_started: "Please wait. The game hasn't started yet."
-    directions_control: |
+    directions_ctrl: |
         <p>Over the next few minutes, we will test your memory.  This is NOT an IQ test.   When the game is over, you will have an opportunity to compare your memory with others in the room, however, it is not a competition among individual students.</p>
 
         <p>The teacher will read the class a list of statements.   You may not write anything down and you may not talk or communicate with anyone.  After the list of statements is complete, everyone in the class will silently attempt to answer a series of questions regarding the statements you just heard.  Answers will be marked either right or wrong, and your answer sheet will be anonymous.</p>
 
         <p>You will be handed the list of questions as soon as the teacher finishes reading the statements.  For the next few minutes, your task is to <strong>LISTEN</strong> quietly and <strong>TRY NOT TO FORGET</strong> what you hear.</p>
-    directions_treatment: |
+    directions_treat: |
         <p>Over the next few minutes, we will test your memory.  This is NOT an IQ test.   When the game is over, you will have an opportunity to compare your memory with others in the room, however, it is not a competition among individual students.</p>
 
         <p>The teacher will read the class a list of statements.   You may not write anything down and you may not talk or communicate with anyone.  After the list of statements is complete, everyone in the class will silently attempt to answer a series of questions regarding the statements you just heard.  Answers will be marked either right or wrong, and your answer sheet will be anonymous.</p>

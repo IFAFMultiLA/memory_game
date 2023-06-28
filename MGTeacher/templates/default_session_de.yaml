@@ -30,13 +30,13 @@ sentences:
     - (Micheles Fuß blutete, weil sie sich an einem Stück scharfer Koralle geschnitten hatte.)
 messages:
     not_started: "Bitte warten Sie. Das Spiel hat noch nicht begonnen."
-    directions_control: |
+    directions_ctrl: |
         <ul>
           <li>Dieser Quiz ist anonym</li>
           <li>Machen Sie keine Notizen, sprechen Sie nicht</li>
           <li>Versuchen Sie sich jeden einzelnen Satz, der vorgelesen wird, einzuprägen. Wenn z.B. &apos; Das rote Motorrad steht vor dem gelben Haus. &apos; gesagt wird, merken Sie sich das, um die Fragen korrekt zu beantworten.</li>
         </ul>
-    directions_treatment: |
+    directions_treat: |
         <ul>
           <li>Dieser Quiz ist anonym</li>
           <li>Machen Sie keine Notizen, sprechen Sie nicht</li>
