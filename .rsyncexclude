@@ -8,5 +8,7 @@
 .rsyncexclude
 Makefile
 *.swp
+.~*
 sessions/
 MGTeacher/.Renviron
+MGTeacher/answerchecking_*
