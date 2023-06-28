@@ -20,9 +20,14 @@ questiondef <- read_yaml(here("templates", sprintf("default_session_%s.yaml", la
 questions <- sapply(questiondef, function(item) {item$q})
 
 checkdat <- read.csv(here(sprintf("answerchecking_data_%s.csv", lang)), header = FALSE)
+stopifnot(nrow(checkdat) > 1)   # there must be at least two rows of data
 
-if (length(questiondef) != ncol(checkdat)) {
-    warning("there are more questions in the session definition than checks in the answer-checking data")
+check_q <- trimws(checkdat[1, ])
+missing_q <- setdiff(questions, check_q)
+
+if (length(missing_q) > 0) {
+    warning(sprintf("the following questions are missing from the answer-checking dataset: %s",
+                    paste(missing_q, collapse = "; ")))
 }
 
 check_question_answers <- function(i) {
@@ -30,10 +35,15 @@ check_question_answers <- function(i) {
     a <- trimws(checkdat[2:nrow(checkdat), i])
     a <- a[a != ""]
 
+    if (length(a) == 0) {
+        warning(sprintf("no answer samples for question '%s'", q))
+        return(logical(0))
+    }
+
     i_def <- which(q == questions)
 
     if (length(i_def) != 1) {
-        return(NULL)
+        return(logical(0))
     }
 
     sapply(a, check_answer, questiondef = questiondef[[i_def]])

@@ -71,16 +71,18 @@ questions:
     - q: What color was the bench on which the orange kitten slept on?
       a: green
     - q: The stamp was omitted from an envelope containing what?
-      a: ["birthday card", "a birthday card"]
+      a: "\\bbirthday\\b"
+      regex: true
     - q: How many tulips remain?
       a: [two, "2"]
     - q: What direction are the storm clouds drifting?
-      a: "\\bsouthwest\\b"
+      a: "\\bsouth( |-)*west\\b"
       regex: true
     - q: What did the chocolate candy have in it besides peanuts?
       a: walnuts
     - q: Where is it 6 o’clock?
-      a: korea
+      a: "\\bkorea\\b"
+      regex: true
     - q: What toilet is clogged up again?
       a: "\\b(upper|upstairs)\\b"
       regex: true
@@ -99,7 +101,7 @@ questions:
     - q: What is quite expensive to produce?
       a: "business cards"
     - q: Whose favorite holiday is Easter?
-      a: "^rebecca('?s)?$"
+      a: "^rebecca(['’]?s)?$"
       regex: true
     - q: The dead body of what animal was full of maggots?
       a: "\\bsheep\\b"
