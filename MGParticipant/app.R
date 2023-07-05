@@ -3,10 +3,15 @@ library(here)
 library(yaml)
 library(stringi)
 library(dplyr)
+library(filelock)
 
 source(here('..', 'common.R'))
 
-SESSION_REFRESH_TIME <- 1000   # session refresh timer in milliseconds
+SESSION_REFRESH_TIME <- 1000        # session refresh timer in milliseconds
+ASSIGNMENT_MODE <- "alternating"    # group assignment mode; either "random" or "alternating"
+
+stopifnot(ASSIGNMENT_MODE %in% c("random", "alternating"))
+
 
 user_data_path <- function(sess_id, user_id) {
     here(SESS_DIR, sess_id, paste0("user_", user_id, ".rds"))
@@ -128,8 +133,37 @@ server <- function(input, output, session) {
             }
 
             if (state$group_was_set && state$group == "unassigned") {
-                isolate(state$group <- sample(GROUPS, size = 1))
-                print(sprintf("random assignment to %s", state$group))
+                if (ASSIGNMENT_MODE == "random") {
+                    isolate(state$group <- sample(GROUPS, size = 1))
+                    print(sprintf("random assignment to group '%s'", state$group))
+                } else {   # ASSIGNMENT_MODE == "alternating"
+                    # alternating group assignment using an RDS file that always stores the assignment send to the
+                    # previous participant; the RDS file is file-locked to prevent concurrent access (see
+                    # ?lock::filelock for details)
+                    cur_sess_dir <- here(SESS_DIR, sess_id)
+
+                    assignment_file <- here(cur_sess_dir, "assignments.rds")
+                    if (fs::file_exists(assignment_file)) {
+                        # an assignments file exists (there were assignments before)
+                        lockfile <- lock(here(cur_sess_dir, "assignments.lock"))
+                        g <- readRDS(assignment_file)
+                        g <- (g %% 2) + 1   # alternate between 1 and 2
+                        saveRDS(g, assignment_file)
+                        unlock(lockfile)
+                    } else {
+                        # no assignments file exists – initial assignment is done randomly
+                        lockfile <- lock(here(cur_sess_dir, "assignments.lock"))
+                        g <- sample(1:2, size = 1)
+                        saveRDS(g, assignment_file, compress = FALSE)
+                        unlock(lockfile)
+                    }
+
+                    stopifnot(g %in% 1:2)
+
+                    isolate(state$group <- GROUPS[g])
+                    print(sprintf("alternating assignment to group '%s'", state$group))
+                }
+
                 session$sendCustomMessage("set_group", state$group);
             }
 
