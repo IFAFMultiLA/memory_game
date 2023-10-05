@@ -1,8 +1,10 @@
 library(here)
 library(yaml)
 library(dplyr)
+library(lubridate)
 
 DATADIR <- here('data')
+OUTPUTDIR <- here('output')
 
 
 session_ids <- character()
@@ -76,8 +78,84 @@ sessquestions
 
 sessanswers
 
-wrong_answers <- inner_join(sessquestions, sessanswers, by = c("sess_id", "question_i")) |>
-    filter(sess_id == "3nz8T62U", correct == FALSE, answer != "") |>
-    select(user_id, question, answer)
+# wrong answers for a specific session
 
-write.csv(wrong_answers, "wrong_answers.csv", row.names = FALSE)
+sid <- "3nz8T62U"
+wrong_answers <- inner_join(sessquestions, sessanswers, by = c("sess_id", "question_i")) |>
+    filter(sess_id == sid, correct == FALSE, answer != "") |>
+    select(user_id, question, answer)
+wrong_answers
+
+write.csv(wrong_answers, fs::path_join(c(OUTPUTDIR, sprintf("wrong_answers_%s.csv", sid))), row.names = FALSE)
+
+# full data for all sessions in stage "questions" or later
+
+fulldata <- filter(sessdata, stage >= "questions") |>
+    inner_join(sessquestions, by = "sess_id") |>
+    inner_join(sessanswers, by = c("sess_id", "question_i"))
+
+write.csv(fulldata, fs::path_join(c(OUTPUTDIR, "fulldata.csv")), row.names = FALSE)
+
+# user counts per session
+
+user_counts <- group_by(fulldata, sess_id, language) |>
+    distinct(user_id) |>
+    count() |>
+    arrange(desc(n))
+user_counts
+
+write.csv(user_counts, fs::path_join(c(OUTPUTDIR, "user_counts.csv")), row.names = FALSE)
+
+# valid sessions: those with at least 3 participants
+
+valid_sessions <- filter(user_counts, n > 3) |> pull(sess_id)
+valid_sessions
+
+# valid German language sessions
+
+de_data <- filter(fulldata, sess_id %in% valid_sessions, language == "de") |>
+    select(question_i, question, group, answer, correct)
+de_data
+
+# number and proportion of correct answers per question
+
+prop_correct_de_full <- group_by(de_data, question_i, question) |>
+    summarize(n = n(), n_correct = sum(correct), prop_correct = sum(correct)/n()) |>
+    ungroup() |>
+    arrange(prop_correct)
+prop_correct_de_full
+write.csv(prop_correct_de_full, fs::path_join(c(OUTPUTDIR, "prop_correct_de_full.csv")), row.names = FALSE)
+
+# number and proportion of correct answers per question per treatment/control
+
+prop_correct_de_full_by_group <- group_by(de_data, question_i, question, group) |>
+    summarize(n = n(), n_correct = sum(correct), prop_correct = sum(correct)/n()) |>
+    ungroup() |>
+    arrange(group, prop_correct)
+prop_correct_de_full_by_group
+write.csv(prop_correct_de_full_by_group, fs::path_join(c(OUTPUTDIR, "prop_correct_de_full_by_group.csv")),
+          row.names = FALSE)
+
+# German language sessions after a certain date without empty answers
+
+de_data_nomissings <- filter(de_data, answer != "")
+de_data_nomissings
+
+# number and proportion of correct answers per question
+
+prop_correct_de_nomissings <- group_by(de_data_nomissings, question_i, question) |>
+    summarize(n = n(), n_correct = sum(correct), prop_correct = sum(correct)/n()) |>
+    ungroup() |>
+    arrange(prop_correct)
+prop_correct_de_nomissings
+write.csv(prop_correct_de_nomissings, fs::path_join(c(OUTPUTDIR, "prop_correct_de_nomissings.csv")), row.names = FALSE)
+
+# number and proportion of correct answers per question per treatment/control
+
+prop_correct_de_nomissings_by_group <- group_by(de_data_nomissings, question_i, question, group) |>
+    summarize(n = n(), n_correct = sum(correct), prop_correct = sum(correct)/n()) |>
+    ungroup() |>
+    arrange(group, prop_correct)
+prop_correct_de_nomissings_by_group
+write.csv(prop_correct_de_nomissings_by_group, fs::path_join(c(OUTPUTDIR, "prop_correct_de_nomissings_by_group.csv")),
+          row.names = FALSE)
