@@ -162,3 +162,4 @@ prop_correct_de_nomissings_by_group <- group_by(de_data_nomissings, question_i, 
 prop_correct_de_nomissings_by_group
 write.csv(prop_correct_de_nomissings_by_group, fs::path_join(c(OUTPUTDIR, "prop_correct_de_nomissings_by_group.csv")),
           row.names = FALSE)
+#test
