@@ -6,6 +6,7 @@ library(lubridate)
 DATADIR <- here('data')
 OUTPUTDIR <- here('output')
 
+# ----- read in and parse session data -----
 
 session_ids <- character()
 session_dates <- character()
@@ -62,6 +63,8 @@ for (sess_dir in fs::dir_ls(DATADIR, type = "directory")) {
     }
 }
 
+# ----- create dataframes from the vectors -----
+
 sessdata <- data.frame(sess_id = session_ids, date = session_dates, language = session_lang, stage = session_stage) |>
     mutate(date = as.POSIXct(gsub("T", " ", date)),
            language = as.factor(language),
@@ -78,7 +81,7 @@ sessquestions
 
 sessanswers
 
-# wrong answers for a specific session
+# ----- analysis: wrong answers for a specific session -----
 
 sid <- "3nz8T62U"
 wrong_answers <- inner_join(sessquestions, sessanswers, by = c("sess_id", "question_i")) |>
@@ -88,7 +91,7 @@ wrong_answers
 
 write.csv(wrong_answers, fs::path_join(c(OUTPUTDIR, sprintf("wrong_answers_%s.csv", sid))), row.names = FALSE)
 
-# full data for all sessions in stage "questions" or later
+# ----- full data for all sessions in stage "questions" or later -----
 
 fulldata <- filter(sessdata, stage >= "questions") |>
     inner_join(sessquestions, by = "sess_id") |>
@@ -96,7 +99,7 @@ fulldata <- filter(sessdata, stage >= "questions") |>
 
 write.csv(fulldata, fs::path_join(c(OUTPUTDIR, "fulldata.csv")), row.names = FALSE)
 
-# user counts per session
+# ----- analysis user counts per session -----
 
 user_counts <- group_by(fulldata, sess_id, language) |>
     distinct(user_id) |>
@@ -106,18 +109,18 @@ user_counts
 
 write.csv(user_counts, fs::path_join(c(OUTPUTDIR, "user_counts.csv")), row.names = FALSE)
 
-# valid sessions: those with at least 3 participants
+# ----- valid sessions: those with at least 3 participants -----
 
 valid_sessions <- filter(user_counts, n > 3) |> pull(sess_id)
 valid_sessions
 
-# valid German language sessions
+# ----- valid German language sessions -----
 
 de_data <- filter(fulldata, sess_id %in% valid_sessions, language == "de") |>
     select(question_i, question, group, answer, correct)
 de_data
 
-# number and proportion of correct answers per question
+# ----- number and proportion of correct answers per question -----
 
 prop_correct_de_full <- group_by(de_data, question_i, question) |>
     summarize(n = n(), n_correct = sum(correct), prop_correct = sum(correct)/n()) |>
@@ -126,7 +129,7 @@ prop_correct_de_full <- group_by(de_data, question_i, question) |>
 prop_correct_de_full
 write.csv(prop_correct_de_full, fs::path_join(c(OUTPUTDIR, "prop_correct_de_full.csv")), row.names = FALSE)
 
-# number and proportion of correct answers per question per treatment/control
+# ----- number and proportion of correct answers per question per treatment/control -----
 
 prop_correct_de_full_by_group <- group_by(de_data, question_i, question, group) |>
     summarize(n = n(), n_correct = sum(correct), prop_correct = sum(correct)/n()) |>
@@ -136,12 +139,12 @@ prop_correct_de_full_by_group
 write.csv(prop_correct_de_full_by_group, fs::path_join(c(OUTPUTDIR, "prop_correct_de_full_by_group.csv")),
           row.names = FALSE)
 
-# German language sessions after a certain date without empty answers
+# ----- German language sessions without empty answers -----
 
 de_data_nomissings <- filter(de_data, answer != "")
 de_data_nomissings
 
-# number and proportion of correct answers per question
+# ----- number and proportion of correct answers per question -----
 
 prop_correct_de_nomissings <- group_by(de_data_nomissings, question_i, question) |>
     summarize(n = n(), n_correct = sum(correct), prop_correct = sum(correct)/n()) |>
@@ -150,7 +153,7 @@ prop_correct_de_nomissings <- group_by(de_data_nomissings, question_i, question)
 prop_correct_de_nomissings
 write.csv(prop_correct_de_nomissings, fs::path_join(c(OUTPUTDIR, "prop_correct_de_nomissings.csv")), row.names = FALSE)
 
-# number and proportion of correct answers per question per treatment/control
+# ----- number and proportion of correct answers per question per treatment/control -----
 
 prop_correct_de_nomissings_by_group <- group_by(de_data_nomissings, question_i, question, group) |>
     summarize(n = n(), n_correct = sum(correct), prop_correct = sum(correct)/n()) |>
