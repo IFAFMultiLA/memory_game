@@ -27,7 +27,7 @@ There are two RStudio projects with the Shiny apps: `MGParticipant` contains the
 To run this app on a server, the server needs to have a [Shiny server](https://docs.posit.co/shiny-server/) (open-source or professionall variant) installed and configured. Then, do the following:
 
 1. Create the base folder that will contain the shiny apps. We will call this folder `MemoryGame`. This folder must be a sub-folder of the folder that is configured to serve Shiny apps (e.g. `~/ShinyApps/MemoryGame`).
-2. Copy the folders `MGParticipant`, `MGTeacher` as well as the file `common.R` to the `MemoryGame` folder on the server. Make sure to **exclude** the `renv` subfolder from copying!
+2. Copy the folders `MGParticipant`, `MGTeacher` as well as the file `common.R` to the `MemoryGame` folder on the server. Make sure to **exclude the `renv` subfolder from copying but do include the `renv.lock` file!**
 3. Install all necessary dependencies for the MGParticipant and the MGTeacher app by installing the `renv` package and then running `renv::activate()` and `renv::restore()`.
 4. Create an empty folder `MemoryGame/sessions`. This folder must be writable by the Shiny server instance.
 5. Create the file `MemoryGame/MGTeacher/.Renviron` with the only content `PARTICIPANT_APP_BASEURL=<URL_TO_PARTICIPANT_APP>`; replace `<URL_TO_PARTICIPANT_APP>` by the actual URL that will point to the MGParticipant app on the server, e.g. `https://example-shiny-server.com/MemoryGame/MGParticipant/`.
