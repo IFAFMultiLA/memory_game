@@ -1,6 +1,8 @@
 # Shiny apps for Shrager Memory Game in-class experiments
 
-Date: March 2024 \\ Author: Markus Konrad [markus.konrad\@htw-berlin.de](mailto:markus.konrad@htw-berlin.de){.email}
+Date: March 2024
+
+Author: Markus Konrad <[markus.konrad\@htw-berlin.de](mailto:markus.konrad@htw-berlin.de)>
 
 ## Overview
 
@@ -46,7 +48,7 @@ TODO
 
 The main code is divided into two Shiny apps, each an RStudio project: *MGTeacher* is the administration interface that allows to create new experiments as can be seen in this screenshot:
 
-[![MGTeacher interface](docs_images/mgteacher_interface.png){width="300"}](docs_images/mgteacher_interface.png)
+[![MGTeacher interface](docs_images/mgteacher_interface.png)](docs_images/mgteacher_interface.png)
 
 Once an experiment is created, it can be shared with students via a QR-code which leads to an URL that opens the *MGParticipant* app, which contains all code for the memory game.
 
