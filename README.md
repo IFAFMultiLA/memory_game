@@ -37,11 +37,15 @@ To run this app on a server, the server needs to have a [Shiny server](https://d
 ## Using the apps
 
 ### Creating a new experiment (before class starts)
-
+ <img align="right" width=20% height=20% src="docs_images/create_session.jpg">
+ 
 1. Before the lecture starts, open the teacher app: https://example-shiny-server.com/MemoryGame/MGTeacher/ . Log in with the user name and password specified before.
-2. On the top left, below "Create a new ession from template:" select "default_session_en.yaml" (or default_session_de.yaml for a German version). Then click on "+" to initialise a new game.
+2. On the top left, below "Create a new ession from template:"  
+   select "default_session_en.yaml" (or default_session_de.yaml for a German version). Then click on "+" to initialise a new game.
 3. You should now see "Current stage: start" at the top right.
-4. Scroll down a little to the QR code, zoom in if necessary. The students will enter the game via this QR code, or alternatively via the link above it
+
+
+4. Scroll down a little to the QR code, zoom in if necessary.  <img align="right" width=20% height=20% src="docs_images/qr.jpg"> The students will enter the game via this QR code, or alternatively via the link above it
 5. We recommend to leave the browser window with the QR code open while starting the lecture and introducing the experiment
 (If anything goes wrong, initialize a new session before as described above)
 
@@ -52,7 +56,7 @@ To run this app on a server, the server needs to have a [Shiny server](https://d
 - Now show the QR code on the website above, ask students to join with their smartphone. (Some may have to come to the front with their smartphone and take a photo of the code up close.)
 - The students can now see "Please wait, the game has not started yet"
 - help people having trouble scanning the code
-- When the students have joined, click on on the website to display the instructions on the smartphones.
+- When the students have joined, click on <img  width=10% height=10% src="docs_images/show_directions.jpg">  on the website to display the instructions on the smartphones.
 - Say something like "Please read the instructions on your phone now". Important: Do not explain anything else here so that the intervention can "take effect". Wait 1-2 minutes until everyone has read.
 - Now read out the following sentences. Take a short break after each sentence and visualize what has been said so that the visualization group also has enough time to visualize. Ask students who are taking notes not to do so.
 
