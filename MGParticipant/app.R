@@ -1,3 +1,9 @@
+# Shrager Memory Game – participants' app.
+#
+# Shiny app that implements the memory game for experiment participants.
+#
+# Author: Markus Konrad <markus.konrad@htw-berlin.de>
+
 library(shiny)
 library(here)
 library(yaml)
@@ -5,6 +11,7 @@ library(stringi)
 library(dplyr)
 library(filelock)
 
+# include common functions
 source(here('..', 'common.R'))
 
 SESSION_REFRESH_TIME <- 1000        # session refresh timer in milliseconds
@@ -13,33 +20,42 @@ ASSIGNMENT_MODE <- "alternating"    # group assignment mode; either "random" or 
 stopifnot(ASSIGNMENT_MODE %in% c("random", "alternating"))
 
 
+# helper function to get path to user data RDS file
 user_data_path <- function(sess_id, user_id) {
     here(SESS_DIR, sess_id, paste0("user_", user_id, ".rds"))
 }
 
+# helper function to store user data (list object `user_data`) for user `user_id` in session `sess_id`
+# and group `group`; if `update` is TRUE, loads existing user data and merges it with `user_data`
 save_user_data <- function(sess_id, user_id, group, user_data, update = FALSE) {
     # print("saving user data")
     # print(user_data)
 
     if (update) {
+        # load existing user data on update
         existing_data <- load_user_data(sess_id, user_id)
-        if (is.null(existing_data)) {
+        if (is.null(existing_data)) {   # returns NULL if no user data exists; initialize w/ empty list
             existing_data <- list()
         }
 
+        # update the existing data with new data in `user_data`
         for (k in names(user_data)) {
             existing_data[[k]] <- user_data[[k]]
         }
 
+        # delete these keys – will be set below
         existing_data[c('user_id', 'group')] <- NULL
 
         user_data <- existing_data
     }
 
+    # set user ID and group and store to RDS file
     saveRDS(c(list(user_id = user_id, group = group), user_data),
             here(SESS_DIR, sess_id, paste0("user_", user_id, ".rds")))
 }
 
+# helper function to load existing user data for user `user_id` in session `sess_id`; returns a list if data exists,
+# otherwise returns NULL
 load_user_data <- function(sess_id, user_id) {
     file <- user_data_path(sess_id, user_id)
     # print("loading user data")
@@ -50,6 +66,7 @@ load_user_data <- function(sess_id, user_id) {
     }
 }
 
+# helper function to create an input element for survey item `item` that accepts an integer
 survey_input_int <- function(item) {
     lbl <- paste0("survey_", item$label)
 
@@ -72,6 +89,7 @@ survey_input_int <- function(item) {
     do.call(tags$input, args)
 }
 
+# helper function to create an input element for survey item `item` that accepts a text input
 survey_input_text <- function(item) {
     lbl <- paste0("survey_", item$label)
 
@@ -88,30 +106,34 @@ survey_input_text <- function(item) {
     do.call(tags$input, args)
 }
 
+# minimal shiny app UI definition
 ui <- fluidPage(
     tags$script(src = "js.cookie.min.js"),    # cookie JS library
     tags$script(src = "custom.js"),    # custom JS
     tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),   # custom CSS
     # titlePanel("Shrager Memory Game: Participant App"),
     verticalLayout(
-        uiOutput("mainContent")
+        uiOutput("mainContent")    # all UI elements are rendered in "mainContent" dynamically
     )
 )
 
+# shiny app server definition
 server <- function(input, output, session) {
+    # app state
     state <- reactiveValues(
-        user_id = NULL,
-        sess_id = NULL,
-        sess = NULL,
-        group = NULL,
-        sess_id_was_set = FALSE,
-        group_was_set = FALSE,
-        question_indices = NULL,
-        user_results = NULL,
-        user_answers = NULL,
-        survey_answers = NULL
+        user_id = NULL,            # user ID of the connected user
+        sess_id = NULL,            # session ID of the experiment
+        sess = NULL,               # session configuration (list)
+        group = NULL,              # group assignment ("ctrl" or "treat" – see GROUPS)
+        sess_id_was_set = FALSE,   # stores if session ID was already set
+        group_was_set = FALSE,     # stores if user was already assigned to a group
+        question_indices = NULL,   # stores indices into quiz questions; may be randomized if session is config. as such
+        user_results = NULL,       # logical vector storing if question was answered correctly
+        user_answers = NULL,       # character vector storing the answers to the quiz questions given by the participant
+        survey_answers = NULL      # character vector storing the answers to the survey given by the participant
     )
 
+    # helper function that returns TRUE when the currently selected session includes a survey, otherwise FALSE
     hasSurvey <- function() {
         state$sess$config$survey && !is.null(state$sess$survey) && length(state$sess$survey) > 0
     }
