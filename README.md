@@ -6,9 +6,9 @@ Author: Markus Konrad <[markus.konrad\@htw-berlin.de](mailto:markus.konrad@htw-b
 
 ## Overview
 
-This repository contains code for two R Shiny apps to conduct an in-class experiment suggested by Adam Shrager, 2009.
+This repository contains code for two R Shiny apps to conduct an in-class experiment suggested as pen and paper version by Adam Shrager in 2009.
 
-The experiment has the aim to show how to perform hypothesis testing and lets the students generate their own data for that.
+The experiment has the aim to show how to perform hypothesis testing and lets the students generate their own data for that. The data is generated within a ranomized study, more precisely an A/B test. Both groups are shown the same quiz, but students in the test group get the hint that visualizing the sentences helps to memorize them. 
 
 ## Local installation
 
@@ -55,9 +55,8 @@ To run this app on a server, the server needs to have a [Shiny server](https://d
 2. Now show the QR code on the website above, ask students to join with their smartphone. (Some may have to come to the front with their smartphone and take a photo of the QR code up close.)
 3. The students can now see "Please wait, the game has not started yet"
 4. When the students have joined, click on <img  width=15% height=15% src="docs_images/show_directions.jpg">  on the website to display the instructions on the smartphones.
-5. Say something like "Please read the instructions on your phone now". Important: Do not explain anything else here so that the intervention can "take effect". Wait 1-2 minutes until everyone has read.
-6. Read out the following sentences. Take a short break after each sentence and visualize what has been said so that the visualization group also has enough time to visualize. Ask students who are taking notes not to do so.
-  todo: add sentences here
+5. Say something like "Please read the instructions on your phone now". Important: Do not explain anything else here so that the intervention can "take effect". The intervention is that students in the test group get the hint that visualization helps to memorize the sentences. Wait 1-2 minutes until everyone has read.
+6. Make sure that the teacher app is not visible for students and click on <img  width=15% height=15% src="docs_images/toggle.jpg"> . Read out the sentences one by one. Take a short break after each sentence and visualize what has been said so that the visualization group also has enough time to visualize. Ask students who are taking notes not to do so.
 7. Click on <img  width=15% height=15% src="docs_images/show_questions.jpg"> to display the questions.
 8. Make sure that everyone answers the questions individually and quietly
 9. After a fixed time of 3 minutes or when most people have finished, click on <img  width=15% height=15% src="docs_images/show_results.jpg"> to end the quiz for the students.
