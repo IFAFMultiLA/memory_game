@@ -12,3 +12,5 @@ Makefile
 sessions/
 MGTeacher/.Renviron
 MGTeacher/answerchecking_*
+UserDataAnalysis/
+docs_images/
