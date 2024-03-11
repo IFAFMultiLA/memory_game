@@ -6,9 +6,9 @@ Author: Markus Konrad <[markus.konrad\@htw-berlin.de](mailto:markus.konrad@htw-b
 
 ## Overview
 
-This repository contains code for two R Shiny apps to conduct an in-class experiment suggested by Adam Shrager, 2009.
+This repository contains code for two R Shiny apps to conduct an in-class experiment suggested as pen and paper version by Adam Shrager in 2009.
 
-The experiment has the aim to show how to perform hypothesis testing and lets the students generate their own data for that.
+The experiment has the aim to show how to perform hypothesis testing and lets the students generate their own data for that. The data is generated within a ranomized study, more precisely an A/B test. Both groups are shown the same quiz, but students in the test group get the hint that visualizing the sentences helps to memorize them. 
 
 ## Local installation
 
@@ -36,13 +36,32 @@ To run this app on a server, the server needs to have a [Shiny server](https://d
 
 ## Using the apps
 
-### Creating and managing experiments
+### Creating a new experiment (before class starts)
+ <img align="right" width=30% height=30% src="docs_images/create_session.jpg">
+ 
+1. Before the lecture starts, open the teacher app: https://example-shiny-server.com/MemoryGame/MGTeacher/ . Log in with the user name and password specified before.
+2. On the top left, below "Create a new ession from template:"  
+   select "default_session_en.yaml" (or default_session_de.yaml for a German version). Then click on "+" to initialise a new game.
+3. You should now see "Current stage: start" at the top right.
 
-TODO
+4. Scroll down a little to the QR code, zoom in if necessary.  <img align="right" width=30% height=30% src="docs_images/qr.jpg"> The students will enter the game via this QR code, or alternatively via the link above it
+5. We recommend to leave the browser window with the QR code open while starting the lecture and introducing the experiment
+(If anything goes wrong, initialize a new session before as described above)
 
-### Participating in an experiment
 
-TODO
+### Running the experiment (during class)
+
+1. Say a few introductory words, like "We are going to generate data together that we will analyze afterwards... This is a memory game... It is completely anonymous, only you can see how many points you have scored."(Do not mention the intervention here, as it would spoil the effect)
+2. Now show the QR code on the website above, ask students to join with their smartphone. (Some may have to come to the front with their smartphone and take a photo of the QR code up close.)
+3. The students can now see "Please wait, the game has not started yet"
+4. When the students have joined, click on <img  width=15% height=15% src="docs_images/show_directions.jpg">  on the website to display the instructions on the smartphones.
+5. Say something like "Please read the instructions on your phone now". Important: Do not explain anything else here so that the intervention can "take effect". The intervention is that students in the test group get the hint that visualization helps to memorize the sentences. Wait 1-2 minutes until everyone has read.
+6. Make sure that the teacher app is not visible for students and click on <img  width=15% height=15% src="docs_images/toggle.jpg"> . Read out the sentences one by one. Take a short break after each sentence and visualize what has been said so that the visualization group also has enough time to visualize. Ask students who are taking notes not to do so.
+7. Click on <img  width=15% height=15% src="docs_images/show_questions.jpg"> to display the questions.
+8. Make sure that everyone answers the questions individually and quietly
+9. After a fixed time of 3 minutes or when most people have finished, click on <img  width=15% height=15% src="docs_images/show_results.jpg"> to end the quiz for the students.
+10. Click on <img  width=20% height=20% src="docs_images/download_data.jpg"> on the top right of the website
+11. You can now reveal the treatment, have the students analyse the data, discuss the importance of randomization, discuss why the effect might not be significant, explain that this was essentially an A/B test and that anybody using apps on a smartphone or surfing webpages takes part in many such A/B tests every day... and much more!
 
 ## File and code structure
 
