@@ -2,7 +2,7 @@
 
 Date: March 2024
 
-Author: Markus Konrad <[markus.konrad\@htw-berlin.de](mailto:markus.konrad@htw-berlin.de)>
+Author: Andre Beinrucker <[andre.beinrucker\@htw-berlin.de](mailto:andre.beinrucker@htw-berlin.de)>, Markus Konrad <[markus.konrad\@htw-berlin.de](mailto:markus.konrad@htw-berlin.de)>
 
 ## Overview
 
